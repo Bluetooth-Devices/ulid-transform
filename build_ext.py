@@ -28,7 +28,7 @@ ulid_module = Extension(
         join("src", "ulid_transform", "ulid_wrapper.cpp"),
     ],
     language="c++",
-    extra_compile_args=["-std=c++11"],
+    extra_compile_args=["-std=c++11", "-O3", "-g0"],
     extra_link_args=["-std=c++11"],
 )
 
@@ -50,16 +50,16 @@ def build(setup_kwargs: Any) -> None:
         from Cython.Build import cythonize
 
         setup_kwargs.update(
-            dict(
-                ext_modules=cythonize(
+            {
+                "ext_modules": cythonize(
                     [
                         ulid_module,
                     ],
                     compiler_directives={"language_level": "3"},  # Python 3
                     verbose=True,
                 ),
-                cmdclass=dict(build_ext=BuildExt),
-            )
+                "cmdclass": {"build_ext": BuildExt},
+            }
         )
         setup_kwargs["exclude_package_data"] = {
             pkg: ["_ulid_impl.cpp"] for pkg in setup_kwargs["packages"]
