@@ -22,12 +22,10 @@ def _get_available_implementations():
 
 
 _impls = dict(_get_available_implementations())
-impl_names, impl_modules = zip(*_impls.items())
+impl_names, impl_modules = zip(*_impls.items(), strict=False)
 
 
 @pytest.fixture(params=impl_modules, ids=impl_names)
 def impl(request):
-    """
-    Fixture that cycles through all available implementations of the ulid_transform module.
-    """
+    """Fixture that cycles through all available implementations of the ulid_transform module."""
     return request.param

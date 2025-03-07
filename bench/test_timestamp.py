@@ -1,5 +1,4 @@
 import pytest
-
 import tests.conftest  # noqa
 
 example = "01J3YPYJJW00GW0X476W5TVBFE"

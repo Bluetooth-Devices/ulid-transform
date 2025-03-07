@@ -98,7 +98,6 @@ def test_non_uppercase_b32_data(impl):
 
 def test_ulid_to_bytes_or_none(impl):
     """Test ulid_to_bytes_or_none."""
-
     assert (
         impl.ulid_to_bytes_or_none("01EYQZJXZ5Z1Z1Z1Z1Z1Z1Z1Z1")
         == b"\x01w\xaf\xf9w\xe5\xf8~\x1f\x87\xe1\xf8~\x1f\x87\xe1"
@@ -109,7 +108,6 @@ def test_ulid_to_bytes_or_none(impl):
 
 def test_bytes_to_ulid_or_none(impl):
     """Test bytes_to_ulid_or_none."""
-
     assert (
         impl.bytes_to_ulid_or_none(
             b"\x01w\xaf\xf9w\xe5\xf8~\x1f\x87\xe1\xf8~\x1f\x87\xe1"
