@@ -124,18 +124,16 @@ inline void EncodeEntropy(const std::function<uint8_t()>& rng, ULID& ulid)
  * BitsPerRand will return the number of bits in the return value of std::rand
  *
  * */
-namespace {
-    int CalculateBitsPerRand()
-    {
-        int bits = 0;
-        for (int max = RAND_MAX; max > 0; max >>= 1) {
-            ++bits;
-        }
-        return bits;
+int CalculateBitsPerRand()
+{
+    int bits = 0;
+    for (int max = RAND_MAX; max > 0; max >>= 1) {
+        ++bits;
     }
-
-    const int bitsPerRand = CalculateBitsPerRand();
+    return bits;
 }
+
+const int bitsPerRand = CalculateBitsPerRand();
 
 /**
  * EncodeEntropyRand will encode a ulid using std::rand
