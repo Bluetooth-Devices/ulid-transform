@@ -1,6 +1,20 @@
 # CHANGELOG
 
 
+## v1.4.0 (2025-03-07)
+
+### Chores
+
+- Enable clang-format ([#91](https://github.com/Bluetooth-Devices/ulid-transform/pull/91),
+  [`655f639`](https://github.com/Bluetooth-Devices/ulid-transform/commit/655f63973c5b3f4bcb1bdb42f7220cffc03a713c))
+
+### Features
+
+- Speed up random data and improve randomness distribution
+  ([#92](https://github.com/Bluetooth-Devices/ulid-transform/pull/92),
+  [`dfb3a3a`](https://github.com/Bluetooth-Devices/ulid-transform/commit/dfb3a3a39132c2395bf2a911304fa8555ebde9c3))
+
+
 ## v1.3.0 (2025-03-05)
 
 ### Chores
