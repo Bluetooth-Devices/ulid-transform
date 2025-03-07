@@ -179,9 +179,7 @@ inline void EncodeEntropyMt19937Fast(ULID& ulid)
         return std::mt19937(seed_seq);
     }());
     ulid = (ulid >> 80) << 80; // Clear lower 80 bits
-    uint64_t high = static_cast<uint64_t>(gen()) << 32 | gen();
-    uint32_t low = gen();
-    ulid |= (high << 16) | (low >> 16);
+    ulid |= (static_cast<uint64_t>(gen()) << 48) | (static_cast<uint64_t>(gen()) << 16) | (gen() >> 16);
 }
 
 static std::uniform_int_distribution<rand_t> Distribution_0_255(0, 255);
