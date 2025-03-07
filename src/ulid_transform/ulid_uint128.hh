@@ -167,17 +167,20 @@ inline void EncodeEntropyRand(ULID& ulid)
  * */
 inline void EncodeEntropyMt19937Fast(ULID& ulid)
 {
-    static std::mt19937 gen([]() {
+    thread_local std::mt19937 gen([]() {
+        // Use multiple entropy sources for seeding
         std::array<uint32_t, 3> seed_data = {
             static_cast<uint32_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count()),
-            std::random_device {}(),
+            static_cast<uint32_t>(std::random_device {}()),
             static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&gen) & 0xFFFFFFFF)
         };
         std::seed_seq seed_seq(seed_data.begin(), seed_data.end());
         return std::mt19937(seed_seq);
     }());
     ulid = (ulid >> 80) << 80; // Clear lower 80 bits
-    ulid |= (static_cast<uint64_t>(gen()) << 48) | (static_cast<uint64_t>(gen()) << 16) | (gen() >> 16);
+    uint64_t high = static_cast<uint64_t>(gen()) << 32 | gen();
+    uint32_t low = gen();
+    ulid |= (high << 16) | (low >> 16);
 }
 
 static std::uniform_int_distribution<rand_t> Distribution_0_255(0, 255);
