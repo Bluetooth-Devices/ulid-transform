@@ -268,7 +268,8 @@ _DECODE = array.array(
 
 
 def ulid_hex() -> str:
-    """Generate a ULID in lowercase hex that will work for a UUID.
+    """
+    Generate a ULID in lowercase hex that will work for a UUID.
 
     This ulid should not be used for cryptographically secure
     operations.
@@ -281,7 +282,8 @@ def ulid_hex() -> str:
 
 
 def ulid_at_time_bytes(timestamp: float) -> bytes:
-    """Generate an ULID as 16 bytes that will work for a UUID.
+    """
+    Generate an ULID as 16 bytes that will work for a UUID.
 
     uuid.UUID(bytes=ulid_bytes)
     """
@@ -301,7 +303,8 @@ def ulid_now() -> str:
 
 
 def ulid_at_time(timestamp: float) -> str:
-    """Generate a ULID.
+    """
+    Generate a ULID.
 
     This ulid should not be used for cryptographically secure
     operations.

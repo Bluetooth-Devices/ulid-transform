@@ -1,5 +1,4 @@
 import pytest
-
 import tests.conftest  # noqa
 
 
