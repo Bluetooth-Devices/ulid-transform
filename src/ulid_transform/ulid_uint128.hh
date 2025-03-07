@@ -121,43 +121,58 @@ inline void EncodeEntropy(const std::function<uint8_t()>& rng, ULID& ulid)
 }
 
 /**
- * BitsPerRand will return the number of bits in the return value of std::rand
- *
- * */
-int CalculateBitsPerRand()
-{
-    int bits = 0;
-    for (int max = RAND_MAX; max > 0; max >>= 1) {
-        ++bits;
-    }
-    return bits;
-}
-
-const int bitsPerRand = CalculateBitsPerRand();
-
-/**
  * EncodeEntropyRand will encode a ulid using std::rand
  *
  * std::rand returns values in [0, RAND_MAX]
  * */
 inline void EncodeEntropyRand(ULID& ulid)
 {
-    ulid = (ulid >> 80) << 80; // Clear lower 80 bits
+    ulid = (ulid >> 80) << 80;
 
-    ULID e = 0;
-    int randBits = 0;
+    ULID e = (std::rand() * 255ull) / RAND_MAX;
 
-    while (randBits < 80) {
-        e <<= bitsPerRand;
-        e |= static_cast<ULID>(std::rand());
-        randBits += bitsPerRand;
-    }
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
 
-    if (randBits > 80) {
-        e >>= (randBits - 80); // Trim excess bits
-    }
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
 
     ulid |= e;
+}
+
+/**
+ * EncodeEntropyMt19937Fast will encode using std::mt19937
+ * with only 3 generated values.
+ * */
+inline void EncodeEntropyMt19937Fast(ULID& ulid)
+{
+    ulid = (ulid >> 80) << 80; // Clear lower 80 bits
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    uint64_t high = static_cast<uint64_t>(gen()) << 32 | gen();
+    uint32_t low = gen();
+    ulid |= (high << 16) | (low >> 16);
 }
 
 static std::uniform_int_distribution<rand_t> Distribution_0_255(0, 255);

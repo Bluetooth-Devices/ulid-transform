@@ -335,6 +335,28 @@ inline void EncodeEntropyRand(ULID& ulid)
     ulid.data[15] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
 }
 
+/**
+ * EncodeEntropyMt19937Fast will encode using std::mt19937
+ * with only 3 generated values.
+ * */
+inline void EncodeEntropyMt19937Fast(ULID& ulid)
+{
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    uint64_t high = (static_cast<uint64_t>(gen()) << 32) | gen();
+    uint32_t low = gen();
+    ulid.data[6] = (high >> 40) & 0xFF;
+    ulid.data[7] = (high >> 32) & 0xFF;
+    ulid.data[8] = (high >> 24) & 0xFF;
+    ulid.data[9] = (high >> 16) & 0xFF;
+    ulid.data[10] = (high >> 8) & 0xFF;
+    ulid.data[11] = high & 0xFF;
+    ulid.data[12] = (low >> 24) & 0xFF;
+    ulid.data[13] = (low >> 16) & 0xFF;
+    ulid.data[14] = (low >> 8) & 0xFF;
+    ulid.data[15] = low & 0xFF;
+}
+
 static std::uniform_int_distribution<rand_t> Distribution_0_255(0, 255);
 
 /**
