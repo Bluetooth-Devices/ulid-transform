@@ -128,10 +128,8 @@ inline void EncodeEntropy(const std::function<uint8_t()>& rng, ULID& ulid)
 inline void EncodeEntropyRand(ULID& ulid)
 {
     ulid = (ulid >> 80) << 80;
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    uint64_t high = static_cast<uint64_t>(gen()) << 32 | gen();
-    uint32_t low = gen();
+    uint64_t high = (static_cast<uint64_t>(std::rand()) << 32) | std::rand();
+    uint32_t low = std::rand();
     ulid |= (high << 16) | (low >> 16);
 }
 
