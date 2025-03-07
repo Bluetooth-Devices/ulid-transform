@@ -1,6 +1,7 @@
 #ifndef ULID_STRUCT_HH
 #define ULID_STRUCT_HH
 
+#include <array>
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
@@ -333,6 +334,36 @@ inline void EncodeEntropyRand(ULID& ulid)
     ulid.data[13] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
     ulid.data[14] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
     ulid.data[15] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
+}
+
+/**
+ * EncodeEntropyMt19937Fast will encode using std::mt19937
+ * with only 3 generated values.
+ * */
+inline void EncodeEntropyMt19937Fast(ULID& ulid)
+{
+    static thread_local std::mt19937 gen([]() {
+        // Use multiple entropy sources for seeding
+        std::array<uint32_t, 3> seed_data = {
+            static_cast<uint32_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count()),
+            static_cast<uint32_t>(std::random_device {}()),
+            static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&gen) & 0xFFFFFFFF)
+        };
+        std::seed_seq seed_seq(seed_data.begin(), seed_data.end());
+        return std::mt19937(seed_seq);
+    }());
+    uint64_t high = (static_cast<uint64_t>(gen()) << 32) | gen();
+    uint32_t low = gen();
+    ulid.data[6] = (high >> 40) & 0xFF;
+    ulid.data[7] = (high >> 32) & 0xFF;
+    ulid.data[8] = (high >> 24) & 0xFF;
+    ulid.data[9] = (high >> 16) & 0xFF;
+    ulid.data[10] = (high >> 8) & 0xFF;
+    ulid.data[11] = high & 0xFF;
+    ulid.data[12] = (low >> 24) & 0xFF;
+    ulid.data[13] = (low >> 16) & 0xFF;
+    ulid.data[14] = (low >> 8) & 0xFF;
+    ulid.data[15] = low & 0xFF;
 }
 
 static std::uniform_int_distribution<rand_t> Distribution_0_255(0, 255);

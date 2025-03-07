@@ -9,7 +9,7 @@ void _cpp_ulid(char dst[26])
 {
     ulid::ULID ulid;
     ulid::EncodeTimeSystemClockNow(ulid);
-    ulid::EncodeEntropyRand(ulid);
+    ulid::EncodeEntropyMt19937Fast(ulid);
     ulid::MarshalTo(ulid, dst);
 }
 
@@ -20,7 +20,7 @@ void _cpp_ulid_bytes(uint8_t dst[16])
 {
     ulid::ULID ulid;
     ulid::EncodeTimeSystemClockNow(ulid);
-    ulid::EncodeEntropyRand(ulid);
+    ulid::EncodeEntropyMt19937Fast(ulid);
     ulid::MarshalBinaryTo(ulid, dst);
 }
 
@@ -32,7 +32,7 @@ void _cpp_ulid_at_time(double epoch_time, char dst[26])
 {
     ulid::ULID ulid;
     ulid::EncodeTimestamp(static_cast<int64_t>(epoch_time * 1000), ulid);
-    ulid::EncodeEntropyRand(ulid);
+    ulid::EncodeEntropyMt19937Fast(ulid);
     ulid::MarshalTo(ulid, dst);
 }
 
@@ -43,7 +43,7 @@ void _cpp_ulid_at_time_bytes(double epoch_time, uint8_t dst[16])
 {
     ulid::ULID ulid;
     ulid::EncodeTimestamp(static_cast<int64_t>(epoch_time * 1000), ulid);
-    ulid::EncodeEntropyRand(ulid);
+    ulid::EncodeEntropyMt19937Fast(ulid);
     ulid::MarshalBinaryTo(ulid, dst);
 }
 
