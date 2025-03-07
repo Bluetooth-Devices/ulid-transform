@@ -128,12 +128,36 @@ inline void EncodeEntropy(const std::function<uint8_t()>& rng, ULID& ulid)
 inline void EncodeEntropyRand(ULID& ulid)
 {
     ulid = (ulid >> 80) << 80;
-    ULID e = std::rand();
-    e <<= 31;
-    e |= std::rand();
-    e <<= 31;
-    e |= std::rand();
-    e <<= 18;
+
+    ULID e = (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
+    e <<= 8;
+    e |= (std::rand() * 255ull) / RAND_MAX;
+
     ulid |= e;
 }
 
