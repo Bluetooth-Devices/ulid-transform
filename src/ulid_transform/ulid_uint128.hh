@@ -1,6 +1,7 @@
 #ifndef ULID_UINT128_HH
 #define ULID_UINT128_HH
 
+#include <array>
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
