@@ -121,16 +121,42 @@ inline void EncodeEntropy(const std::function<uint8_t()>& rng, ULID& ulid)
 }
 
 /**
+ * BitsPerRand will return the number of bits in the return value of std::rand
+ *
+ * */
+constexpr int BitsPerRand()
+{
+    int bits = 0;
+    for (int max = RAND_MAX; max > 0; max >>= 1) {
+        bits++;
+    }
+    return bits;
+}
+
+/**
  * EncodeEntropyRand will encode a ulid using std::rand
  *
  * std::rand returns values in [0, RAND_MAX]
  * */
 inline void EncodeEntropyRand(ULID& ulid)
 {
-    ulid = (ulid >> 80) << 80;
-    uint64_t high = (static_cast<uint64_t>(std::rand()) << 32) | std::rand();
-    uint32_t low = std::rand();
-    ulid |= (high << 16) | (low >> 16);
+    ulid = (ulid >> 80) << 80; // Clear lower 80 bits
+
+    ULID e = 0;
+    int randBits = 0;
+    constexpr int bitsPerRand = BitsPerRand();
+
+    while (randBits < 80) {
+        e <<= bitsPerRand;
+        e |= static_cast<ULID>(std::rand());
+        randBits += bitsPerRand;
+    }
+
+    if (randBits > 80) {
+        e >>= (randBits - 80); // Trim excess bits
+    }
+
+    ulid |= e;
 }
 
 static std::uniform_int_distribution<rand_t> Distribution_0_255(0, 255);
