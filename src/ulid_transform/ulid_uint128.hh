@@ -26,30 +26,8 @@ typedef __uint128_t ULID;
  * */
 inline void EncodeTimestamp(int64_t timestamp, ULID& ulid)
 {
-    ULID t = static_cast<uint8_t>(timestamp >> 40);
-
-    t <<= 8;
-    t |= static_cast<uint8_t>(timestamp >> 32);
-
-    t <<= 8;
-    t |= static_cast<uint8_t>(timestamp >> 24);
-
-    t <<= 8;
-    t |= static_cast<uint8_t>(timestamp >> 16);
-
-    t <<= 8;
-    t |= static_cast<uint8_t>(timestamp >> 8);
-
-    t <<= 8;
-    t |= static_cast<uint8_t>(timestamp);
-
-    t <<= 80;
-
-    ULID mask = 1;
-    mask <<= 80;
-    mask--;
-
-    ulid = t | (ulid & mask);
+    ulid = (ulid & ((ULID(1) << 80) - 1))
+        | (static_cast<ULID>(timestamp & 0xFFFFFFFFFFFF) << 80);
 }
 
 /**
