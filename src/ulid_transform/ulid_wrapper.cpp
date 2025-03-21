@@ -1,5 +1,10 @@
 #include "ulid_wrapper.h"
-#include "ulid.hh"
+
+#ifdef __SIZEOF_INT128__ // http://stackoverflow.com/a/23981011
+#include "ulid_uint128.hh"
+#else
+#include "ulid_struct.hh"
+#endif
 
 /**
  * Generate a new text ULID and write it to the provided buffer.

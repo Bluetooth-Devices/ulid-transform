@@ -64,102 +64,12 @@ inline void EncodeTime(std::chrono::time_point<std::chrono::system_clock> time_p
 }
 
 /**
- * EncodeTimeNow will encode a ULID using the time obtained using std::time(nullptr)
- * */
-inline void EncodeTimeNow(ULID& ulid)
-{
-    auto time_now = std::chrono::system_clock::from_time_t(time(nullptr));
-    EncodeTime(time_now, ulid);
-}
-
-/**
  * EncodeTimeSystemClockNow will encode a ULID using the time obtained using
  * std::chrono::system_clock::now() by taking the timestamp in milliseconds.
  * */
 inline void EncodeTimeSystemClockNow(ULID& ulid)
 {
     EncodeTime(std::chrono::system_clock::now(), ulid);
-}
-
-/**
- * EncodeEntropy will encode the last 10 bytes of the passed uint8_t array with
- * the values generated using the passed random number generator.
- * */
-inline void EncodeEntropy(const std::function<uint8_t()>& rng, ULID& ulid)
-{
-    ulid = (ulid >> 80) << 80;
-
-    ULID e = rng();
-
-    e <<= 8;
-    e |= rng();
-
-    e <<= 8;
-    e |= rng();
-
-    e <<= 8;
-    e |= rng();
-
-    e <<= 8;
-    e |= rng();
-
-    e <<= 8;
-    e |= rng();
-
-    e <<= 8;
-    e |= rng();
-
-    e <<= 8;
-    e |= rng();
-
-    e <<= 8;
-    e |= rng();
-
-    e <<= 8;
-    e |= rng();
-
-    ulid |= e;
-}
-
-/**
- * EncodeEntropyRand will encode a ulid using std::rand
- *
- * std::rand returns values in [0, RAND_MAX]
- * */
-inline void EncodeEntropyRand(ULID& ulid)
-{
-    ulid = (ulid >> 80) << 80;
-
-    ULID e = (std::rand() * 255ull) / RAND_MAX;
-
-    e <<= 8;
-    e |= (std::rand() * 255ull) / RAND_MAX;
-
-    e <<= 8;
-    e |= (std::rand() * 255ull) / RAND_MAX;
-
-    e <<= 8;
-    e |= (std::rand() * 255ull) / RAND_MAX;
-
-    e <<= 8;
-    e |= (std::rand() * 255ull) / RAND_MAX;
-
-    e <<= 8;
-    e |= (std::rand() * 255ull) / RAND_MAX;
-
-    e <<= 8;
-    e |= (std::rand() * 255ull) / RAND_MAX;
-
-    e <<= 8;
-    e |= (std::rand() * 255ull) / RAND_MAX;
-
-    e <<= 8;
-    e |= (std::rand() * 255ull) / RAND_MAX;
-
-    e <<= 8;
-    e |= (std::rand() * 255ull) / RAND_MAX;
-
-    ulid |= e;
 }
 
 /**
@@ -180,87 +90,6 @@ inline void EncodeEntropyMt19937Fast(ULID& ulid)
     }());
     ulid = (ulid >> 80) << 80; // Clear lower 80 bits
     ulid |= (static_cast<ULID>((static_cast<uint64_t>(gen()) << 32) | gen()) << 16) | (gen() & 0xFFFF);
-}
-
-static std::uniform_int_distribution<rand_t> Distribution_0_255(0, 255);
-
-/**
- * EncodeEntropyMt19937 will encode a ulid using std::mt19937
- *
- * It also creates a std::uniform_int_distribution to generate values in [0, 255]
- * */
-inline void EncodeEntropyMt19937(std::mt19937& generator, ULID& ulid)
-{
-    ulid = (ulid >> 80) << 80;
-
-    ULID e = Distribution_0_255(generator);
-
-    e <<= 8;
-    e |= Distribution_0_255(generator);
-
-    e <<= 8;
-    e |= Distribution_0_255(generator);
-
-    e <<= 8;
-    e |= Distribution_0_255(generator);
-
-    e <<= 8;
-    e |= Distribution_0_255(generator);
-
-    e <<= 8;
-    e |= Distribution_0_255(generator);
-
-    e <<= 8;
-    e |= Distribution_0_255(generator);
-
-    e <<= 8;
-    e |= Distribution_0_255(generator);
-
-    e <<= 8;
-    e |= Distribution_0_255(generator);
-
-    e <<= 8;
-    e |= Distribution_0_255(generator);
-
-    ulid |= e;
-}
-
-/**
- * Encode will create an encoded ULID with a timestamp and a generator.
- * */
-inline void Encode(std::chrono::time_point<std::chrono::system_clock> timestamp, const std::function<uint8_t()>& rng, ULID& ulid)
-{
-    EncodeTime(timestamp, ulid);
-    EncodeEntropy(rng, ulid);
-}
-
-/**
- * EncodeNowRand = EncodeTimeNow + EncodeEntropyRand.
- * */
-inline void EncodeNowRand(ULID& ulid)
-{
-    EncodeTimeNow(ulid);
-    EncodeEntropyRand(ulid);
-}
-
-/**
- * Create will create a ULID with a timestamp and a generator.
- * */
-inline ULID Create(std::chrono::time_point<std::chrono::system_clock> timestamp, const std::function<uint8_t()>& rng)
-{
-    ULID ulid = 0;
-    Encode(timestamp, rng, ulid);
-    return ulid;
-}
-
-/**
- * CreateNowRand:EncodeNowRand = Create:Encode.
- * */
-inline ULID CreateNowRand()
-{
-    ULID ulid = 0;
-    EncodeNowRand(ulid);
-    return ulid;
 }
 
 /**
@@ -323,17 +152,6 @@ inline void MarshalTo(const ULID& ulid, char dst[26])
 }
 
 /**
- * Marshal will marshal a ULID to a std::string.
- * */
-inline std::string Marshal(const ULID& ulid)
-{
-    char data[27];
-    data[26] = '\0';
-    MarshalTo(ulid, data);
-    return std::string(data);
-}
-
-/**
  * MarshalBinaryTo will Marshal a ULID to the passed byte array
  * */
 inline void MarshalBinaryTo(const ULID& ulid, uint8_t dst[16])
@@ -357,16 +175,6 @@ inline void MarshalBinaryTo(const ULID& ulid, uint8_t dst[16])
     dst[13] = static_cast<uint8_t>(ulid >> 16);
     dst[14] = static_cast<uint8_t>(ulid >> 8);
     dst[15] = static_cast<uint8_t>(ulid);
-}
-
-/**
- * MarshalBinary will Marshal a ULID to a byte vector.
- * */
-inline std::vector<uint8_t> MarshalBinary(const ULID& ulid)
-{
-    std::vector<uint8_t> dst(16);
-    MarshalBinaryTo(ulid, dst.data());
-    return dst;
 }
 
 /**
@@ -479,16 +287,6 @@ inline void UnmarshalFrom(const char str[26], ULID& ulid)
 }
 
 /**
- * Unmarshal will create a new ULID by unmarshaling the passed string.
- * */
-inline ULID Unmarshal(const std::string& str)
-{
-    ULID ulid;
-    UnmarshalFrom(str.c_str(), ulid);
-    return ulid;
-}
-
-/**
  * UnmarshalBinaryFrom will unmarshal a ULID from the passed byte array.
  * */
 inline void UnmarshalBinaryFrom(const uint8_t b[16], ULID& ulid)
@@ -541,55 +339,6 @@ inline void UnmarshalBinaryFrom(const uint8_t b[16], ULID& ulid)
 
     ulid <<= 8;
     ulid |= b[15];
-}
-
-/**
- * Unmarshal will create a new ULID by unmarshaling the passed byte vector.
- * */
-inline ULID UnmarshalBinary(const std::vector<uint8_t>& b)
-{
-    ULID ulid;
-    UnmarshalBinaryFrom(b.data(), ulid);
-    return ulid;
-}
-
-/**
- * CompareULIDs will compare two ULIDs.
- * returns:
- *     -1 if ulid1 is Lexicographically before ulid2
- *      1 if ulid1 is Lexicographically after ulid2
- *      0 if ulid1 is same as ulid2
- * */
-inline int CompareULIDs(const ULID& ulid1, const ULID& ulid2)
-{
-    return -2 * (ulid1 < ulid2) - 1 * (ulid1 == ulid2) + 1;
-}
-
-/**
- * Time will extract the timestamp used to generate a ULID
- * */
-inline std::chrono::time_point<std::chrono::system_clock> Time(const ULID& ulid)
-{
-    int64_t ans = 0;
-
-    ans |= static_cast<uint8_t>(ulid >> 120);
-
-    ans <<= 8;
-    ans |= static_cast<uint8_t>(ulid >> 112);
-
-    ans <<= 8;
-    ans |= static_cast<uint8_t>(ulid >> 104);
-
-    ans <<= 8;
-    ans |= static_cast<uint8_t>(ulid >> 96);
-
-    ans <<= 8;
-    ans |= static_cast<uint8_t>(ulid >> 88);
-
-    ans <<= 8;
-    ans |= static_cast<uint8_t>(ulid >> 80);
-
-    return std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds { ans });
 }
 
 }; // namespace ulid

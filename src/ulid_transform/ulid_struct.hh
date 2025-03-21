@@ -22,240 +22,6 @@ namespace ulid {
  * */
 struct ULID {
     uint8_t data[16];
-
-    ULID()
-    {
-        // for (int i = 0 ; i < 16 ; i++) {
-        // 	data[i] = 0;
-        // }
-
-        // unrolled loop
-        data[0] = 0;
-        data[1] = 0;
-        data[2] = 0;
-        data[3] = 0;
-        data[4] = 0;
-        data[5] = 0;
-        data[6] = 0;
-        data[7] = 0;
-        data[8] = 0;
-        data[9] = 0;
-        data[10] = 0;
-        data[11] = 0;
-        data[12] = 0;
-        data[13] = 0;
-        data[14] = 0;
-        data[15] = 0;
-    }
-
-    ULID(uint64_t val)
-    {
-        // for (int i = 0 ; i < 16 ; i++) {
-        // 	data[15 - i] = static_cast<uint8_t>(val);
-        // 	val >>= 8;
-        // }
-
-        // unrolled loop
-        data[15] = static_cast<uint8_t>(val);
-
-        val >>= 8;
-        data[14] = static_cast<uint8_t>(val);
-
-        val >>= 8;
-        data[13] = static_cast<uint8_t>(val);
-
-        val >>= 8;
-        data[12] = static_cast<uint8_t>(val);
-
-        val >>= 8;
-        data[11] = static_cast<uint8_t>(val);
-
-        val >>= 8;
-        data[10] = static_cast<uint8_t>(val);
-
-        val >>= 8;
-        data[9] = static_cast<uint8_t>(val);
-
-        val >>= 8;
-        data[8] = static_cast<uint8_t>(val);
-
-        data[7] = 0;
-        data[6] = 0;
-        data[5] = 0;
-        data[4] = 0;
-        data[3] = 0;
-        data[2] = 0;
-        data[1] = 0;
-        data[0] = 0;
-    }
-
-    ULID(const ULID& other)
-    {
-        // for (int i = 0 ; i < 16 ; i++) {
-        // 	data[i] = other.data[i];
-        // }
-
-        // unrolled loop
-        data[0] = other.data[0];
-        data[1] = other.data[1];
-        data[2] = other.data[2];
-        data[3] = other.data[3];
-        data[4] = other.data[4];
-        data[5] = other.data[5];
-        data[6] = other.data[6];
-        data[7] = other.data[7];
-        data[8] = other.data[8];
-        data[9] = other.data[9];
-        data[10] = other.data[10];
-        data[11] = other.data[11];
-        data[12] = other.data[12];
-        data[13] = other.data[13];
-        data[14] = other.data[14];
-        data[15] = other.data[15];
-    }
-
-    ULID& operator=(const ULID& other)
-    {
-        // for (int i = 0 ; i < 16 ; i++) {
-        // 	data[i] = other.data[i];
-        // }
-
-        // unrolled loop
-        data[0] = other.data[0];
-        data[1] = other.data[1];
-        data[2] = other.data[2];
-        data[3] = other.data[3];
-        data[4] = other.data[4];
-        data[5] = other.data[5];
-        data[6] = other.data[6];
-        data[7] = other.data[7];
-        data[8] = other.data[8];
-        data[9] = other.data[9];
-        data[10] = other.data[10];
-        data[11] = other.data[11];
-        data[12] = other.data[12];
-        data[13] = other.data[13];
-        data[14] = other.data[14];
-        data[15] = other.data[15];
-
-        return *this;
-    }
-
-    ULID(ULID&& other)
-    {
-        // for (int i = 0 ; i < 16 ; i++) {
-        // 	data[i] = other.data[i];
-        // 	other.data[i] = 0;
-        // }
-
-        // unrolled loop
-        data[0] = other.data[0];
-        other.data[0] = 0;
-
-        data[1] = other.data[1];
-        other.data[1] = 0;
-
-        data[2] = other.data[2];
-        other.data[2] = 0;
-
-        data[3] = other.data[3];
-        other.data[3] = 0;
-
-        data[4] = other.data[4];
-        other.data[4] = 0;
-
-        data[5] = other.data[5];
-        other.data[5] = 0;
-
-        data[6] = other.data[6];
-        other.data[6] = 0;
-
-        data[7] = other.data[7];
-        other.data[7] = 0;
-
-        data[8] = other.data[8];
-        other.data[8] = 0;
-
-        data[9] = other.data[9];
-        other.data[9] = 0;
-
-        data[10] = other.data[10];
-        other.data[10] = 0;
-
-        data[11] = other.data[11];
-        other.data[11] = 0;
-
-        data[12] = other.data[12];
-        other.data[12] = 0;
-
-        data[13] = other.data[13];
-        other.data[13] = 0;
-
-        data[14] = other.data[14];
-        other.data[14] = 0;
-
-        data[15] = other.data[15];
-        other.data[15] = 0;
-    }
-
-    ULID& operator=(ULID&& other)
-    {
-        // for (int i = 0 ; i < 16 ; i++) {
-        // 	data[i] = other.data[i];
-        // 	other.data[i] = 0;
-        // }
-
-        // unrolled loop
-        data[0] = other.data[0];
-        other.data[0] = 0;
-
-        data[1] = other.data[1];
-        other.data[1] = 0;
-
-        data[2] = other.data[2];
-        other.data[2] = 0;
-
-        data[3] = other.data[3];
-        other.data[3] = 0;
-
-        data[4] = other.data[4];
-        other.data[4] = 0;
-
-        data[5] = other.data[5];
-        other.data[5] = 0;
-
-        data[6] = other.data[6];
-        other.data[6] = 0;
-
-        data[7] = other.data[7];
-        other.data[7] = 0;
-
-        data[8] = other.data[8];
-        other.data[8] = 0;
-
-        data[9] = other.data[9];
-        other.data[9] = 0;
-
-        data[10] = other.data[10];
-        other.data[10] = 0;
-
-        data[11] = other.data[11];
-        other.data[11] = 0;
-
-        data[12] = other.data[12];
-        other.data[12] = 0;
-
-        data[13] = other.data[13];
-        other.data[13] = 0;
-
-        data[14] = other.data[14];
-        other.data[14] = 0;
-
-        data[15] = other.data[15];
-        other.data[15] = 0;
-
-        return *this;
-    }
 };
 
 /**
@@ -282,58 +48,12 @@ inline void EncodeTime(std::chrono::time_point<std::chrono::system_clock> time_p
 }
 
 /**
- * EncodeTimeNow will encode a ULID using the time obtained using std::time(nullptr)
- * */
-inline void EncodeTimeNow(ULID& ulid)
-{
-    auto time_now = std::chrono::system_clock::from_time_t(time(nullptr));
-    EncodeTime(time_now, ulid);
-}
-
-/**
  * EncodeTimeSystemClockNow will encode a ULID using the time obtained using
  * std::chrono::system_clock::now() by taking the timestamp in milliseconds.
  * */
 inline void EncodeTimeSystemClockNow(ULID& ulid)
 {
     EncodeTime(std::chrono::system_clock::now(), ulid);
-}
-
-/**
- * EncodeEntropy will encode the last 10 bytes of the passed uint8_t array with
- * the values generated using the passed random number generator.
- * */
-inline void EncodeEntropy(const std::function<uint8_t()>& rng, ULID& ulid)
-{
-    ulid.data[6] = rng();
-    ulid.data[7] = rng();
-    ulid.data[8] = rng();
-    ulid.data[9] = rng();
-    ulid.data[10] = rng();
-    ulid.data[11] = rng();
-    ulid.data[12] = rng();
-    ulid.data[13] = rng();
-    ulid.data[14] = rng();
-    ulid.data[15] = rng();
-}
-
-/**
- * EncodeEntropyRand will encode a ulid using std::rand
- *
- * std::rand returns values in [0, RAND_MAX]
- * */
-inline void EncodeEntropyRand(ULID& ulid)
-{
-    ulid.data[6] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
-    ulid.data[7] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
-    ulid.data[8] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
-    ulid.data[9] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
-    ulid.data[10] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
-    ulid.data[11] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
-    ulid.data[12] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
-    ulid.data[13] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
-    ulid.data[14] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
-    ulid.data[15] = static_cast<uint8_t>((std::rand() * 255ull) / RAND_MAX);
 }
 
 /**
@@ -364,65 +84,6 @@ inline void EncodeEntropyMt19937Fast(ULID& ulid)
     ulid.data[13] = (low >> 16) & 0xFF;
     ulid.data[14] = (low >> 8) & 0xFF;
     ulid.data[15] = low & 0xFF;
-}
-
-static std::uniform_int_distribution<rand_t> Distribution_0_255(0, 255);
-
-/**
- * EncodeEntropyMt19937 will encode a ulid using std::mt19937
- *
- * It also creates a std::uniform_int_distribution to generate values in [0, 255]
- * */
-inline void EncodeEntropyMt19937(std::mt19937& generator, ULID& ulid)
-{
-    ulid.data[6] = Distribution_0_255(generator);
-    ulid.data[7] = Distribution_0_255(generator);
-    ulid.data[8] = Distribution_0_255(generator);
-    ulid.data[9] = Distribution_0_255(generator);
-    ulid.data[10] = Distribution_0_255(generator);
-    ulid.data[11] = Distribution_0_255(generator);
-    ulid.data[12] = Distribution_0_255(generator);
-    ulid.data[13] = Distribution_0_255(generator);
-    ulid.data[14] = Distribution_0_255(generator);
-    ulid.data[15] = Distribution_0_255(generator);
-}
-
-/**
- * Encode will create an encoded ULID with a timestamp and a generator.
- * */
-inline void Encode(std::chrono::time_point<std::chrono::system_clock> timestamp, const std::function<uint8_t()>& rng, ULID& ulid)
-{
-    EncodeTime(timestamp, ulid);
-    EncodeEntropy(rng, ulid);
-}
-
-/**
- * EncodeNowRand = EncodeTimeNow + EncodeEntropyRand.
- * */
-inline void EncodeNowRand(ULID& ulid)
-{
-    EncodeTimeNow(ulid);
-    EncodeEntropyRand(ulid);
-}
-
-/**
- * Create will create a ULID with a timestamp and a generator.
- * */
-inline ULID Create(std::chrono::time_point<std::chrono::system_clock> timestamp, const std::function<uint8_t()>& rng)
-{
-    ULID ulid;
-    Encode(timestamp, rng, ulid);
-    return ulid;
-}
-
-/**
- * CreateNowRand:EncodeNowRand = Create:Encode.
- * */
-inline ULID CreateNowRand()
-{
-    ULID ulid;
-    EncodeNowRand(ulid);
-    return ulid;
 }
 
 /**
@@ -485,17 +146,6 @@ inline void MarshalTo(const ULID& ulid, char dst[26])
 }
 
 /**
- * Marshal will marshal a ULID to a std::string.
- * */
-inline std::string Marshal(const ULID& ulid)
-{
-    char data[27];
-    data[26] = '\0';
-    MarshalTo(ulid, data);
-    return std::string(data);
-}
-
-/**
  * MarshalBinaryTo will Marshal a ULID to the passed byte array
  * */
 inline void MarshalBinaryTo(const ULID& ulid, uint8_t dst[16])
@@ -519,16 +169,6 @@ inline void MarshalBinaryTo(const ULID& ulid, uint8_t dst[16])
     dst[13] = ulid.data[13];
     dst[14] = ulid.data[14];
     dst[15] = ulid.data[15];
-}
-
-/**
- * MarshalBinary will Marshal a ULID to a byte vector.
- * */
-inline std::vector<uint8_t> MarshalBinary(const ULID& ulid)
-{
-    std::vector<uint8_t> dst(16);
-    MarshalBinaryTo(ulid, dst.data());
-    return dst;
 }
 
 /**
@@ -612,16 +252,6 @@ inline void UnmarshalFrom(const char str[26], ULID& ulid)
 }
 
 /**
- * Unmarshal will create a new ULID by unmarshaling the passed string.
- * */
-inline ULID Unmarshal(const std::string& str)
-{
-    ULID ulid;
-    UnmarshalFrom(str.c_str(), ulid);
-    return ulid;
-}
-
-/**
  * UnmarshalBinaryFrom will unmarshal a ULID from the passed byte array.
  * */
 inline void UnmarshalBinaryFrom(const uint8_t b[16], ULID& ulid)
@@ -645,127 +275,6 @@ inline void UnmarshalBinaryFrom(const uint8_t b[16], ULID& ulid)
     ulid.data[13] = b[13];
     ulid.data[14] = b[14];
     ulid.data[15] = b[15];
-}
-
-/**
- * Unmarshal will create a new ULID by unmarshaling the passed byte vector.
- * */
-inline ULID UnmarshalBinary(const std::vector<uint8_t>& b)
-{
-    ULID ulid;
-    UnmarshalBinaryFrom(b.data(), ulid);
-    return ulid;
-}
-
-/**
- * CompareULIDs will compare two ULIDs.
- * returns:
- *     -1 if ulid1 is Lexicographically before ulid2
- *      1 if ulid1 is Lexicographically after ulid2
- *      0 if ulid1 is same as ulid2
- * */
-inline int CompareULIDs(const ULID& ulid1, const ULID& ulid2)
-{
-    // for (int i = 0 ; i < 16 ; i++) {
-    // 	if (ulid1.data[i] != ulid2.data[i]) {
-    // 		return (ulid1.data[i] < ulid2.data[i]) * -2 + 1;
-    // 	}
-    // }
-
-    // unrolled loop
-
-    if (ulid1.data[0] != ulid2.data[0]) {
-        return (ulid1.data[0] < ulid2.data[0]) * -2 + 1;
-    }
-
-    if (ulid1.data[1] != ulid2.data[1]) {
-        return (ulid1.data[1] < ulid2.data[1]) * -2 + 1;
-    }
-
-    if (ulid1.data[2] != ulid2.data[2]) {
-        return (ulid1.data[2] < ulid2.data[2]) * -2 + 1;
-    }
-
-    if (ulid1.data[3] != ulid2.data[3]) {
-        return (ulid1.data[3] < ulid2.data[3]) * -2 + 1;
-    }
-
-    if (ulid1.data[4] != ulid2.data[4]) {
-        return (ulid1.data[4] < ulid2.data[4]) * -2 + 1;
-    }
-
-    if (ulid1.data[5] != ulid2.data[5]) {
-        return (ulid1.data[5] < ulid2.data[5]) * -2 + 1;
-    }
-
-    if (ulid1.data[6] != ulid2.data[6]) {
-        return (ulid1.data[6] < ulid2.data[6]) * -2 + 1;
-    }
-
-    if (ulid1.data[7] != ulid2.data[7]) {
-        return (ulid1.data[7] < ulid2.data[7]) * -2 + 1;
-    }
-
-    if (ulid1.data[8] != ulid2.data[8]) {
-        return (ulid1.data[8] < ulid2.data[8]) * -2 + 1;
-    }
-
-    if (ulid1.data[9] != ulid2.data[9]) {
-        return (ulid1.data[9] < ulid2.data[9]) * -2 + 1;
-    }
-
-    if (ulid1.data[10] != ulid2.data[10]) {
-        return (ulid1.data[10] < ulid2.data[10]) * -2 + 1;
-    }
-
-    if (ulid1.data[11] != ulid2.data[11]) {
-        return (ulid1.data[11] < ulid2.data[11]) * -2 + 1;
-    }
-
-    if (ulid1.data[12] != ulid2.data[12]) {
-        return (ulid1.data[12] < ulid2.data[12]) * -2 + 1;
-    }
-
-    if (ulid1.data[13] != ulid2.data[13]) {
-        return (ulid1.data[13] < ulid2.data[13]) * -2 + 1;
-    }
-
-    if (ulid1.data[14] != ulid2.data[14]) {
-        return (ulid1.data[14] < ulid2.data[14]) * -2 + 1;
-    }
-
-    if (ulid1.data[15] != ulid2.data[15]) {
-        return (ulid1.data[15] < ulid2.data[15]) * -2 + 1;
-    }
-
-    return 0;
-}
-
-/**
- * Time will extract the timestamp used to generate a ULID
- * */
-inline std::chrono::time_point<std::chrono::system_clock> Time(const ULID& ulid)
-{
-    int64_t ans = 0;
-
-    ans |= ulid.data[0];
-
-    ans <<= 8;
-    ans |= ulid.data[1];
-
-    ans <<= 8;
-    ans |= ulid.data[2];
-
-    ans <<= 8;
-    ans |= ulid.data[3];
-
-    ans <<= 8;
-    ans |= ulid.data[4];
-
-    ans <<= 8;
-    ans |= ulid.data[5];
-
-    return std::chrono::time_point<std::chrono::system_clock>(std::chrono::milliseconds { ans });
 }
 
 }; // namespace ulid
