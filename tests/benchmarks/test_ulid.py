@@ -1,4 +1,5 @@
 from pytest_codspeed import BenchmarkFixture
+
 from ulid_transform import ulid_at_time, ulid_at_time_bytes, ulid_now
 
 
