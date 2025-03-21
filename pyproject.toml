@@ -66,10 +66,6 @@ exclude_lines = [
     'if __name__ == "__main__":',
 ]
 
-[tool.isort]
-profile = "black"
-known_first_party = ["ulid_transform", "tests"]
-
 [tool.mypy]
 check_untyped_defs = true
 disallow_any_generics = true
@@ -91,6 +87,21 @@ allow_untyped_defs = true
 [[tool.mypy.overrides]]
 module = "bench.*"
 allow_untyped_defs = true
+
+[tool.ruff.lint]
+extend-select = [
+    "B",
+    "I",
+    "S",
+    "UP",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ulid_transform", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
+"bench/*" = ["S101"]
+"tests/*" = ["S101"]
 
 [build-system]
 requires = ['setuptools>=65.4.1', 'wheel', 'Cython>=3.0.2', "poetry-core>=1.0.0"]

@@ -1,6 +1,7 @@
 from uuid import UUID
 
 import pytest
+
 import tests.conftest  # noqa
 
 
