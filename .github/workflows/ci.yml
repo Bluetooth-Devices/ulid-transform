@@ -172,14 +172,14 @@ jobs:
 
       # Do a dry run of PSR
       - name: Test release
-        uses: python-semantic-release/python-semantic-release@v9.21.0
+        uses: python-semantic-release/python-semantic-release@v10.2.0
         if: github.ref_name != 'main'
         with:
           root_options: --noop
 
       # On main branch: actual PSR + upload to PyPI & GitHub
       - name: Release
-        uses: python-semantic-release/python-semantic-release@v9.21.0
+        uses: python-semantic-release/python-semantic-release@v10.2.0
         id: release
         if: github.ref_name == 'main'
         with:
@@ -281,7 +281,7 @@ jobs:
             echo "CIBW_BUILD=${{ matrix.pyver }}*" >> $GITHUB_ENV
           fi
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.23.3
+        uses: pypa/cibuildwheel@v3.1.3
         env:
           CIBW_SKIP: cp36-* cp37-* cp38-* cp39-* cp310-* pp* ${{ matrix.musl == 'musllinux' && '*manylinux*' || '*musllinux*' }}
           REQUIRE_CYTHON: 1
