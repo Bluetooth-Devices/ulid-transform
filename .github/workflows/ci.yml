@@ -39,6 +39,8 @@ jobs:
           - "3.11"
           - "3.12"
           - "3.13"
+          - "3.14"
+          - "3.14t"
 
         os:
           - ubuntu-latest
@@ -281,7 +283,7 @@ jobs:
             echo "CIBW_BUILD=${{ matrix.pyver }}*" >> $GITHUB_ENV
           fi
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.23.3
+        uses: pypa/cibuildwheel@v3.2.0
         env:
           CIBW_SKIP: cp36-* cp37-* cp38-* cp39-* cp310-* pp* ${{ matrix.musl == 'musllinux' && '*manylinux*' || '*musllinux*' }}
           REQUIRE_CYTHON: 1
