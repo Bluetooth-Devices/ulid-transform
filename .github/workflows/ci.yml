@@ -81,14 +81,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Setup Alpine Linux v3.18 for x86
+      - name: Setup Alpine Linux v3.22 for x86
         uses: jirutka/setup-alpine@v1
         with:
           arch: x86
-          branch: v3.18
+          branch: v3.22
       - name: Set up Python
         run: |
-          apk add gcc g++ musl-dev python3-dev py3-pip poetry
+          apk add gcc g++ musl-dev python3-dev py3-pip poetry libffi-dev
         shell: alpine.sh --root {0}
       - name: Install Dependencies
         run: |
