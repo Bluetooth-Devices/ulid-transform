@@ -1,21 +1,24 @@
-[tool.poetry]
+[project]
 name = "ulid-transform"
-version = "1.4.0"
-description = "Create and transform ULIDs"
-authors = ["J. Nick Koston <nick@koston.org>"]
+version = "1.4.1"
 license = "MIT"
+description = "Create and transform ULIDs"
 readme = "README.md"
-repository = "https://github.com/bluetooth-devices/ulid-transform"
+authors = [{ name = "J. Nick Koston", email = "nick@koston.org" }]
+requires-python = ">=3.11"
+
+[project.urls]
+"Repository" = "https://github.com/bluetooth-devices/ulid-transform"
+"Bug Tracker" = "https://github.com/bluetooth-devices/ulid-transform/issues"
+"Changelog" = "https://github.com/bluetooth-devices/ulid-transform/blob/main/CHANGELOG.md"
+
+[tool.poetry]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Libraries",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
 ]
 packages = [
     { include = "ulid_transform", from = "src" },
@@ -24,10 +27,6 @@ packages = [
 [tool.poetry.build]
 generate-setup-file = true
 script = "build_ext.py"
-
-[tool.poetry.urls]
-"Bug Tracker" = "https://github.com/bluetooth-devices/ulid-transform/issues"
-"Changelog" = "https://github.com/bluetooth-devices/ulid-transform/blob/main/CHANGELOG.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -46,7 +45,7 @@ ulid2 = "^0.3.0"
 pytest-benchmark = ">=4,<6"
 
 [tool.semantic_release]
-version_toml = ["pyproject.toml:tool.poetry.version"]
+version_toml = ["pyproject.toml:project.version"]
 version_variables = [
     "src/ulid_transform/__init__.py:__version__",
 ]
@@ -105,5 +104,5 @@ known-first-party = ["ulid_transform", "tests"]
 "tests/*" = ["S101"]
 
 [build-system]
-requires = ['setuptools>=65.4.1', 'wheel', 'Cython>=3.0.2', "poetry-core>=1.0.0"]
+requires = ['setuptools>=77.0', 'Cython>=3.0.2', "poetry-core>=2.1.0"]
 build-backend = "poetry.core.masonry.api"
