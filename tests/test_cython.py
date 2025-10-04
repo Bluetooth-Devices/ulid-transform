@@ -9,4 +9,5 @@ def test_require_cython():
         pytest.skip("REQUIRE_CYTHON is not truthy")
     import ulid_transform._ulid_impl as c_impl
 
-    assert repr(c_impl.ulid_now).startswith("<cyfunction")
+    # With @cython.binding(False), functions show as built-in instead of cyfunction
+    assert repr(c_impl.ulid_now).startswith(("<cyfunction", "<built-in function"))
