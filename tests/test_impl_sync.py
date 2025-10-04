@@ -1,5 +1,7 @@
 from inspect import getdoc, signature
 
+import pytest
+
 import ulid_transform
 
 
@@ -7,11 +9,7 @@ def get_signature_string(func):
     """Get a comparable signature string from a function."""
     # Doctor the signature to remove quotes - this should be good enough to
     # just get rid of the quoting around deferred annotations.
-    try:
-        return repr(signature(func)).replace("'", "")
-    except ValueError:
-        # Functions with @cython.binding(False) don't have introspectable signatures
-        return None
+    return repr(signature(func)).replace("'", "")
 
 
 def test_impl_exports_required_keys(impl):
@@ -21,21 +19,25 @@ def test_impl_exports_required_keys(impl):
     )
 
 
-def test_impls_in_sync(impl):
-    """Test implementations are in sync with the python implementation (docstrings and signatures)."""
+def test_impls_docstrings_in_sync(impl):
+    """Test implementations have matching docstrings with the python implementation."""
     import ulid_transform._py_ulid_impl as python_impl
-
-    # Check if this is the C implementation (uses @cython.binding(False))
-    is_c_impl = impl.__name__ == "ulid_transform._ulid_impl"
 
     for key in ulid_transform.__all__:
         py_func = getattr(python_impl, key)
         impl_func = getattr(impl, key)
         assert getdoc(py_func) == getdoc(impl_func)
-        # Skip signature checks for C implementation with @cython.binding(False)
-        # as it doesn't provide reliable introspection
-        if not is_c_impl:
-            py_sig = get_signature_string(py_func)
-            impl_sig = get_signature_string(impl_func)
-            if py_sig is not None and impl_sig is not None:
-                assert py_sig == impl_sig
+
+
+@pytest.mark.skipif(
+    "impl.__name__ == 'ulid_transform._ulid_impl'",
+    reason="C implementation uses @cython.binding(False) which breaks introspection",
+)
+def test_impls_signatures_in_sync(impl):
+    """Test implementations have matching signatures with the python implementation."""
+    import ulid_transform._py_ulid_impl as python_impl
+
+    for key in ulid_transform.__all__:
+        py_func = getattr(python_impl, key)
+        impl_func = getattr(impl, key)
+        assert get_signature_string(py_func) == get_signature_string(impl_func)
