@@ -6,6 +6,7 @@
 # 2. When working with ULID text, the buffer is exactly 26 bytes long and not NUL-terminated.
 # See https://github.com/cython/cython/issues/3234
 
+import cython
 from libc.stdint cimport uint8_t, uint64_t
 
 
@@ -20,6 +21,7 @@ cdef extern from "ulid_wrapper.h":
     uint64_t _cpp_bytes_to_timestamp(const uint8_t b[16]) nogil
 
 
+@cython.binding(False)
 def ulid_hex() -> str:
     """Generate a ULID in lowercase hex that will work for a UUID.
 
@@ -37,6 +39,7 @@ def ulid_hex() -> str:
     return <str>ulid_hex_buf[:32]
 
 
+@cython.binding(False)
 def ulid_now_bytes() -> bytes:
     """Generate an ULID as 16 bytes that will work for a UUID."""
     cdef unsigned char ulid_bytes_buf[16]
@@ -44,6 +47,7 @@ def ulid_now_bytes() -> bytes:
     return <bytes>ulid_bytes_buf[:16]
 
 
+@cython.binding(False)
 def ulid_at_time_bytes(timestamp: float) -> bytes:
     """Generate an ULID as 16 bytes that will work for a UUID.
 
@@ -54,6 +58,7 @@ def ulid_at_time_bytes(timestamp: float) -> bytes:
     return <bytes>ulid_bytes_buf[:16]
 
 
+@cython.binding(False)
 def ulid_now() -> str:
     """Generate a ULID."""
     cdef char ulid_text_buf[26]
@@ -61,6 +66,7 @@ def ulid_now() -> str:
     return <str>ulid_text_buf[:26]
 
 
+@cython.binding(False)
 def ulid_at_time(timestamp: float) -> str:
     """Generate a ULID.
 
@@ -83,6 +89,7 @@ def ulid_at_time(timestamp: float) -> str:
     return <str>ulid_text_buf[:26]
 
 
+@cython.binding(False)
 def ulid_to_bytes(value: str) -> bytes:
     """Decode a ulid to bytes."""
     if len(value) != 26:
@@ -92,6 +99,7 @@ def ulid_to_bytes(value: str) -> bytes:
     return <bytes>ulid_bytes_buf[:16]
 
 
+@cython.binding(False)
 def bytes_to_ulid(value: bytes) -> str:
     """Encode bytes to a ulid."""
     if len(value) != 16:
@@ -101,6 +109,7 @@ def bytes_to_ulid(value: bytes) -> str:
     return <str>ulid_text_buf[:26]
 
 
+@cython.binding(False)
 def ulid_to_bytes_or_none(ulid: str | None) -> bytes | None:
     """Convert an ulid to bytes."""
     if ulid is None or len(ulid) != 26:
@@ -110,6 +119,7 @@ def ulid_to_bytes_or_none(ulid: str | None) -> bytes | None:
     return <bytes>ulid_bytes_buf[:16]
 
 
+@cython.binding(False)
 def bytes_to_ulid_or_none(ulid_bytes: bytes | None) -> str | None:
     """Convert bytes to a ulid."""
     if ulid_bytes is None or len(ulid_bytes) != 16:
@@ -119,6 +129,7 @@ def bytes_to_ulid_or_none(ulid_bytes: bytes | None) -> str | None:
     return <str>ulid_text_buf[:26]
 
 
+@cython.binding(False)
 def ulid_to_timestamp(ulid: str | bytes) -> int:
     """
     Get the timestamp from a ULID.
