@@ -7,6 +7,7 @@
 #include <ctime>
 #include <functional>
 #include <random>
+#include <thread>
 #include <vector>
 
 #if _MSC_VER > 0
@@ -67,7 +68,7 @@ inline void EncodeEntropyMt19937Fast(ULID& ulid)
         std::array<uint32_t, 3> seed_data = {
             static_cast<uint32_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count()),
             static_cast<uint32_t>(std::random_device {}()),
-            static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&gen) & 0xFFFFFFFF)
+            static_cast<uint32_t>(std::hash<std::thread::id> {}(std::this_thread::get_id()))
         };
         std::seed_seq seed_seq(seed_data.begin(), seed_data.end());
         return std::mt19937(seed_seq);
