@@ -9,7 +9,7 @@ ci:
 
 repos:
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.9.1
+    rev: v4.10.0
     hooks:
       - id: commitizen
         stages: [commit-msg]
@@ -39,7 +39,7 @@ repos:
         additional_dependencies:
           - prettier@3.5.1
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.2
+    rev: v0.14.8
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -51,13 +51,13 @@ repos:
         args:
           - --ignore-words-list=ans
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.2
+    rev: v1.19.0
     hooks:
       - id: mypy
         additional_dependencies: []
         exclude: "src/ulid_transform/__init__.pyi"
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v21.1.2
+    rev: v21.1.7
     hooks:
       - id: clang-format
         types_or:
