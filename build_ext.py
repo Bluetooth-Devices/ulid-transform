@@ -25,7 +25,6 @@ ulid_module = Extension(
     "ulid_transform._ulid_impl",
     [
         join("src", "ulid_transform", "_ulid_impl.cpp"),
-        join("src", "ulid_transform", "ulid_wrapper.cpp"),
     ],
     language="c++",
     extra_compile_args=["-std=c++11", "-O3", "-g0"],

@@ -1,24 +1,57 @@
 #include "Python.h"
-#include "ulid_wrapper.h"
+
+#ifdef __SIZEOF_INT128__
+#include "ulid_uint128.hh"
+#else
+#include "ulid_struct.hh"
+#endif
+
+constexpr Py_ssize_t ULID_BYTES_LEN = 16;
+constexpr Py_ssize_t ULID_TEXT_LEN = 26;
+constexpr Py_ssize_t ULID_HEX_LEN = 32;
+
+static inline void
+hexlify_16(const uint8_t b[ULID_BYTES_LEN], char dst[ULID_HEX_LEN])
+{
+    static const char hexdigits[17] = "0123456789abcdef";
+    for (int i = 0, j = 0; i < ULID_BYTES_LEN; i++) {
+        dst[j++] = hexdigits[b[i] >> 4];
+        dst[j++] = hexdigits[b[i] & 0x0f];
+    }
+}
+
+static inline uint64_t
+bytes_to_timestamp(const uint8_t b[ULID_BYTES_LEN])
+{
+    return (static_cast<uint64_t>(b[0]) << 40) | (static_cast<uint64_t>(b[1]) << 32)
+        | (static_cast<uint64_t>(b[2]) << 24) | (static_cast<uint64_t>(b[3]) << 16)
+        | (static_cast<uint64_t>(b[4]) << 8) | static_cast<uint64_t>(b[5]);
+}
 
 /* ulid_hex() -> str */
 static PyObject*
 py_ulid_hex(PyObject* module, PyObject* Py_UNUSED(ignored))
 {
-    uint8_t buf[16];
-    char hex[32];
-    _cpp_ulid_bytes(buf);
-    _cpp_hexlify_16(buf, hex);
-    return PyUnicode_DecodeASCII(hex, 32, NULL);
+    ulid::ULID ulid;
+    ulid::EncodeTimeSystemClockNow(ulid);
+    ulid::EncodeEntropyMt19937Fast(ulid);
+    uint8_t buf[ULID_BYTES_LEN];
+    ulid::MarshalBinaryTo(ulid, buf);
+    char hex[ULID_HEX_LEN];
+    hexlify_16(buf, hex);
+    return PyUnicode_DecodeASCII(hex, ULID_HEX_LEN, NULL);
 }
 
 /* ulid_now_bytes() -> bytes */
 static PyObject*
 py_ulid_now_bytes(PyObject* module, PyObject* Py_UNUSED(ignored))
 {
-    uint8_t buf[16];
-    _cpp_ulid_bytes(buf);
-    return PyBytes_FromStringAndSize((const char*)buf, 16);
+    ulid::ULID ulid;
+    ulid::EncodeTimeSystemClockNow(ulid);
+    ulid::EncodeEntropyMt19937Fast(ulid);
+    uint8_t buf[ULID_BYTES_LEN];
+    ulid::MarshalBinaryTo(ulid, buf);
+    return PyBytes_FromStringAndSize((const char*)buf, ULID_BYTES_LEN);
 }
 
 /* ulid_at_time_bytes(timestamp) -> bytes */
@@ -28,18 +61,24 @@ py_ulid_at_time_bytes(PyObject* module, PyObject* arg)
     double ts = PyFloat_AsDouble(arg);
     if (ts == -1.0 && PyErr_Occurred())
         return NULL;
-    uint8_t buf[16];
-    _cpp_ulid_at_time_bytes(ts, buf);
-    return PyBytes_FromStringAndSize((const char*)buf, 16);
+    ulid::ULID ulid;
+    ulid::EncodeTimestamp(static_cast<int64_t>(ts * 1000), ulid);
+    ulid::EncodeEntropyMt19937Fast(ulid);
+    uint8_t buf[ULID_BYTES_LEN];
+    ulid::MarshalBinaryTo(ulid, buf);
+    return PyBytes_FromStringAndSize((const char*)buf, ULID_BYTES_LEN);
 }
 
 /* ulid_now() -> str */
 static PyObject*
 py_ulid_now(PyObject* module, PyObject* Py_UNUSED(ignored))
 {
-    char buf[26];
-    _cpp_ulid(buf);
-    return PyUnicode_DecodeASCII(buf, 26, NULL);
+    ulid::ULID ulid;
+    ulid::EncodeTimeSystemClockNow(ulid);
+    ulid::EncodeEntropyMt19937Fast(ulid);
+    char buf[ULID_TEXT_LEN];
+    ulid::MarshalTo(ulid, buf);
+    return PyUnicode_DecodeASCII(buf, ULID_TEXT_LEN, NULL);
 }
 
 /* ulid_at_time(timestamp) -> str */
@@ -49,9 +88,12 @@ py_ulid_at_time(PyObject* module, PyObject* arg)
     double ts = PyFloat_AsDouble(arg);
     if (ts == -1.0 && PyErr_Occurred())
         return NULL;
-    char buf[26];
-    _cpp_ulid_at_time(ts, buf);
-    return PyUnicode_DecodeASCII(buf, 26, NULL);
+    ulid::ULID ulid;
+    ulid::EncodeTimestamp(static_cast<int64_t>(ts * 1000), ulid);
+    ulid::EncodeEntropyMt19937Fast(ulid);
+    char buf[ULID_TEXT_LEN];
+    ulid::MarshalTo(ulid, buf);
+    return PyUnicode_DecodeASCII(buf, ULID_TEXT_LEN, NULL);
 }
 
 /* ulid_to_bytes(value) -> bytes */
@@ -68,14 +110,14 @@ py_ulid_to_bytes(PyObject* module, PyObject* arg)
     const char* str = PyUnicode_AsUTF8AndSize(arg, &len);
     if (!str)
         return NULL;
-    if (len != 26) {
+    if (len != ULID_TEXT_LEN) {
         PyErr_Format(PyExc_ValueError,
             "ULID must be a 26 character string: %R", arg);
         return NULL;
     }
-    uint8_t buf[16];
-    _cpp_ulid_to_bytes(str, buf);
-    return PyBytes_FromStringAndSize((const char*)buf, 16);
+    uint8_t buf[ULID_BYTES_LEN];
+    ulid::DecodeBase32To(str, buf);
+    return PyBytes_FromStringAndSize((const char*)buf, ULID_BYTES_LEN);
 }
 
 /* bytes_to_ulid(value) -> str */
@@ -88,14 +130,14 @@ py_bytes_to_ulid(PyObject* module, PyObject* arg)
             Py_TYPE(arg)->tp_name);
         return NULL;
     }
-    if (PyBytes_GET_SIZE(arg) != 16) {
+    if (PyBytes_GET_SIZE(arg) != ULID_BYTES_LEN) {
         PyErr_Format(PyExc_ValueError,
             "ULID bytes must be 16 bytes: %R", arg);
         return NULL;
     }
-    char buf[26];
-    _cpp_bytes_to_ulid((const uint8_t*)PyBytes_AS_STRING(arg), buf);
-    return PyUnicode_DecodeASCII(buf, 26, NULL);
+    char buf[ULID_TEXT_LEN];
+    ulid::EncodeBase32From((const uint8_t*)PyBytes_AS_STRING(arg), buf);
+    return PyUnicode_DecodeASCII(buf, ULID_TEXT_LEN, NULL);
 }
 
 /* ulid_to_bytes_or_none(ulid) -> bytes | None */
@@ -108,22 +150,22 @@ py_ulid_to_bytes_or_none(PyObject* module, PyObject* arg)
     const char* str = PyUnicode_AsUTF8AndSize(arg, &len);
     if (!str)
         return NULL;
-    if (len != 26)
+    if (len != ULID_TEXT_LEN)
         Py_RETURN_NONE;
-    uint8_t buf[16];
-    _cpp_ulid_to_bytes(str, buf);
-    return PyBytes_FromStringAndSize((const char*)buf, 16);
+    uint8_t buf[ULID_BYTES_LEN];
+    ulid::DecodeBase32To(str, buf);
+    return PyBytes_FromStringAndSize((const char*)buf, ULID_BYTES_LEN);
 }
 
 /* bytes_to_ulid_or_none(ulid_bytes) -> str | None */
 static PyObject*
 py_bytes_to_ulid_or_none(PyObject* module, PyObject* arg)
 {
-    if (arg == Py_None || !PyBytes_Check(arg) || PyBytes_GET_SIZE(arg) != 16)
+    if (arg == Py_None || !PyBytes_Check(arg) || PyBytes_GET_SIZE(arg) != ULID_BYTES_LEN)
         Py_RETURN_NONE;
-    char buf[26];
-    _cpp_bytes_to_ulid((const uint8_t*)PyBytes_AS_STRING(arg), buf);
-    return PyUnicode_DecodeASCII(buf, 26, NULL);
+    char buf[ULID_TEXT_LEN];
+    ulid::EncodeBase32From((const uint8_t*)PyBytes_AS_STRING(arg), buf);
+    return PyUnicode_DecodeASCII(buf, ULID_TEXT_LEN, NULL);
 }
 
 /* ulid_to_timestamp(ulid) -> int */
@@ -131,12 +173,12 @@ static PyObject*
 py_ulid_to_timestamp(PyObject* module, PyObject* arg)
 {
     if (PyBytes_Check(arg)) {
-        if (PyBytes_GET_SIZE(arg) != 16) {
+        if (PyBytes_GET_SIZE(arg) != ULID_BYTES_LEN) {
             PyErr_Format(PyExc_ValueError,
                 "ULID bytes must be 16 bytes: %R", arg);
             return NULL;
         }
-        uint64_t ts = _cpp_bytes_to_timestamp(
+        uint64_t ts = bytes_to_timestamp(
             (const uint8_t*)PyBytes_AS_STRING(arg));
         return PyLong_FromUnsignedLongLong(ts);
     }
@@ -150,14 +192,14 @@ py_ulid_to_timestamp(PyObject* module, PyObject* arg)
     const char* str = PyUnicode_AsUTF8AndSize(arg, &len);
     if (!str)
         return NULL;
-    if (len != 26) {
+    if (len != ULID_TEXT_LEN) {
         PyErr_Format(PyExc_ValueError,
             "ULID must be a 26 character string: %R", arg);
         return NULL;
     }
-    uint8_t buf[16];
-    _cpp_ulid_to_bytes(str, buf);
-    uint64_t ts = _cpp_bytes_to_timestamp(buf);
+    uint8_t buf[ULID_BYTES_LEN];
+    ulid::DecodeBase32To(str, buf);
+    uint64_t ts = bytes_to_timestamp(buf);
     return PyLong_FromUnsignedLongLong(ts);
 }
 
