@@ -117,35 +117,40 @@ inline void EncodeEntropyMt19937Fast(ULID& ulid)
  * */
 inline void MarshalTo(const ULID& ulid, char dst[26])
 {
-    // 10 byte timestamp
-    dst[0] = Encoding[(static_cast<uint8_t>(ulid >> 120) & 224) >> 5];
-    dst[1] = Encoding[static_cast<uint8_t>(ulid >> 120) & 31];
-    dst[2] = Encoding[(static_cast<uint8_t>(ulid >> 112) & 248) >> 3];
-    dst[3] = Encoding[((static_cast<uint8_t>(ulid >> 112) & 7) << 2) | ((static_cast<uint8_t>(ulid >> 104) & 192) >> 6)];
-    dst[4] = Encoding[(static_cast<uint8_t>(ulid >> 104) & 62) >> 1];
-    dst[5] = Encoding[((static_cast<uint8_t>(ulid >> 104) & 1) << 4) | ((static_cast<uint8_t>(ulid >> 96) & 240) >> 4)];
-    dst[6] = Encoding[((static_cast<uint8_t>(ulid >> 96) & 15) << 1) | ((static_cast<uint8_t>(ulid >> 88) & 128) >> 7)];
-    dst[7] = Encoding[(static_cast<uint8_t>(ulid >> 88) & 124) >> 2];
-    dst[8] = Encoding[((static_cast<uint8_t>(ulid >> 88) & 3) << 3) | ((static_cast<uint8_t>(ulid >> 80) & 224) >> 5)];
-    dst[9] = Encoding[static_cast<uint8_t>(ulid >> 80) & 31];
+    // Decompose into two 64-bit halves kept in registers to avoid
+    // repeated memory loads the compiler generates with __uint128_t.
+    const uint64_t hi = static_cast<uint64_t>(ulid >> 64);
+    const uint64_t lo = static_cast<uint64_t>(ulid);
 
-    // 16 bytes of entropy
-    dst[10] = Encoding[(static_cast<uint8_t>(ulid >> 72) & 248) >> 3];
-    dst[11] = Encoding[((static_cast<uint8_t>(ulid >> 72) & 7) << 2) | ((static_cast<uint8_t>(ulid >> 64) & 192) >> 6)];
-    dst[12] = Encoding[(static_cast<uint8_t>(ulid >> 64) & 62) >> 1];
-    dst[13] = Encoding[((static_cast<uint8_t>(ulid >> 64) & 1) << 4) | ((static_cast<uint8_t>(ulid >> 56) & 240) >> 4)];
-    dst[14] = Encoding[((static_cast<uint8_t>(ulid >> 56) & 15) << 1) | ((static_cast<uint8_t>(ulid >> 48) & 128) >> 7)];
-    dst[15] = Encoding[(static_cast<uint8_t>(ulid >> 48) & 124) >> 2];
-    dst[16] = Encoding[((static_cast<uint8_t>(ulid >> 48) & 3) << 3) | ((static_cast<uint8_t>(ulid >> 40) & 224) >> 5)];
-    dst[17] = Encoding[static_cast<uint8_t>(ulid >> 40) & 31];
-    dst[18] = Encoding[(static_cast<uint8_t>(ulid >> 32) & 248) >> 3];
-    dst[19] = Encoding[((static_cast<uint8_t>(ulid >> 32) & 7) << 2) | ((static_cast<uint8_t>(ulid >> 24) & 192) >> 6)];
-    dst[20] = Encoding[(static_cast<uint8_t>(ulid >> 24) & 62) >> 1];
-    dst[21] = Encoding[((static_cast<uint8_t>(ulid >> 24) & 1) << 4) | ((static_cast<uint8_t>(ulid >> 16) & 240) >> 4)];
-    dst[22] = Encoding[((static_cast<uint8_t>(ulid >> 16) & 15) << 1) | ((static_cast<uint8_t>(ulid >> 8) & 128) >> 7)];
-    dst[23] = Encoding[(static_cast<uint8_t>(ulid >> 8) & 124) >> 2];
-    dst[24] = Encoding[((static_cast<uint8_t>(ulid >> 8) & 3) << 3) | (((static_cast<uint8_t>(ulid)) & 224) >> 5)];
-    dst[25] = Encoding[(static_cast<uint8_t>(ulid)) & 31];
+    // 10 char timestamp (3 + 9*5 = 48 bits)
+    dst[0] = Encoding[(hi >> 61) & 0x07];
+    dst[1] = Encoding[(hi >> 56) & 0x1F];
+    dst[2] = Encoding[(hi >> 51) & 0x1F];
+    dst[3] = Encoding[(hi >> 46) & 0x1F];
+    dst[4] = Encoding[(hi >> 41) & 0x1F];
+    dst[5] = Encoding[(hi >> 36) & 0x1F];
+    dst[6] = Encoding[(hi >> 31) & 0x1F];
+    dst[7] = Encoding[(hi >> 26) & 0x1F];
+    dst[8] = Encoding[(hi >> 21) & 0x1F];
+    dst[9] = Encoding[(hi >> 16) & 0x1F];
+
+    // 16 char entropy (80 bits)
+    dst[10] = Encoding[(hi >> 11) & 0x1F];
+    dst[11] = Encoding[(hi >> 6) & 0x1F];
+    dst[12] = Encoding[(hi >> 1) & 0x1F];
+    dst[13] = Encoding[((hi & 1) << 4) | ((lo >> 60) & 0x0F)];
+    dst[14] = Encoding[(lo >> 55) & 0x1F];
+    dst[15] = Encoding[(lo >> 50) & 0x1F];
+    dst[16] = Encoding[(lo >> 45) & 0x1F];
+    dst[17] = Encoding[(lo >> 40) & 0x1F];
+    dst[18] = Encoding[(lo >> 35) & 0x1F];
+    dst[19] = Encoding[(lo >> 30) & 0x1F];
+    dst[20] = Encoding[(lo >> 25) & 0x1F];
+    dst[21] = Encoding[(lo >> 20) & 0x1F];
+    dst[22] = Encoding[(lo >> 15) & 0x1F];
+    dst[23] = Encoding[(lo >> 10) & 0x1F];
+    dst[24] = Encoding[(lo >> 5) & 0x1F];
+    dst[25] = Encoding[lo & 0x1F];
 }
 
 /**
@@ -153,25 +158,12 @@ inline void MarshalTo(const ULID& ulid, char dst[26])
  * */
 inline void MarshalBinaryTo(const ULID& ulid, uint8_t dst[16])
 {
-    // timestamp
-    dst[0] = static_cast<uint8_t>(ulid >> 120);
-    dst[1] = static_cast<uint8_t>(ulid >> 112);
-    dst[2] = static_cast<uint8_t>(ulid >> 104);
-    dst[3] = static_cast<uint8_t>(ulid >> 96);
-    dst[4] = static_cast<uint8_t>(ulid >> 88);
-    dst[5] = static_cast<uint8_t>(ulid >> 80);
-
-    // entropy
-    dst[6] = static_cast<uint8_t>(ulid >> 72);
-    dst[7] = static_cast<uint8_t>(ulid >> 64);
-    dst[8] = static_cast<uint8_t>(ulid >> 56);
-    dst[9] = static_cast<uint8_t>(ulid >> 48);
-    dst[10] = static_cast<uint8_t>(ulid >> 40);
-    dst[11] = static_cast<uint8_t>(ulid >> 32);
-    dst[12] = static_cast<uint8_t>(ulid >> 24);
-    dst[13] = static_cast<uint8_t>(ulid >> 16);
-    dst[14] = static_cast<uint8_t>(ulid >> 8);
-    dst[15] = static_cast<uint8_t>(ulid);
+    // Use bswap to convert each 64-bit half from host order to big-endian,
+    // instead of 16 individual byte shifts.
+    uint64_t high = __builtin_bswap64(static_cast<uint64_t>(ulid >> 64));
+    uint64_t low = __builtin_bswap64(static_cast<uint64_t>(ulid));
+    __builtin_memcpy(dst, &high, 8);
+    __builtin_memcpy(dst + 8, &low, 8);
 }
 
 /**
