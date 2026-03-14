@@ -1,6 +1,6 @@
 [project]
 name = "ulid-transform"
-version = "1.5.2"
+version = "1.5.3"
 license = "MIT"
 description = "Create and transform ULIDs"
 readme = "README.md"
@@ -32,7 +32,7 @@ script = "build_ext.py"
 python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
-pytest = ">=7,<9"
+pytest = ">=7,<10"
 pytest-cov = ">=3,<8"
 Cython = ">=3.0.5"
 setuptools = ">=65.4.1,<83.0.0"
