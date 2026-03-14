@@ -30,7 +30,7 @@
 
 Create and transform ULIDs
 
-This library will use the CPP implementation from https://github.com/suyash/ulid if cython is available, and will fallback to pure python if it is not.
+This library will use the C++ implementation from https://github.com/suyash/ulid when the C extension is available, and will fallback to pure python if it is not.
 
 ## Example
 
@@ -62,7 +62,7 @@ Install this via pip (or your favourite package manager):
 
 ## Contributors ✨
 
-Thanks to https://github.com/suyash/ulid which provides the cython implementation guts.
+Thanks to https://github.com/suyash/ulid which provides the C++ implementation guts.
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 

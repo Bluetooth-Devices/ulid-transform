@@ -136,11 +136,8 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
-# Cython debug symbols
+# Cython debug symbols (legacy)
 cython_debug/
-
-# Generated Cython files
-src/ulid_transform/*.html
 
 # PyCharm files
 .idea/
