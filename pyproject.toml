@@ -104,5 +104,5 @@ known-first-party = ["ulid_transform", "tests"]
 "tests/*" = ["S101"]
 
 [build-system]
-requires = ['setuptools>=77.0', 'Cython>=3.0.2', "poetry-core>=2.1.0"]
+requires = ['setuptools>=77.0', "poetry-core>=2.1.0"]
 build-backend = "poetry.core.masonry.api"

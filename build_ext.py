@@ -1,4 +1,4 @@
-"""Build optional cython modules."""
+"""Build optional C extension modules."""
 
 import logging
 import os
@@ -24,7 +24,7 @@ def getenv_bool(key: str, default: bool = False) -> bool:
 ulid_module = Extension(
     "ulid_transform._ulid_impl",
     [
-        join("src", "ulid_transform", "_ulid_impl.pyx"),
+        join("src", "ulid_transform", "_ulid_impl.cpp"),
         join("src", "ulid_transform", "ulid_wrapper.cpp"),
     ],
     language="c++",
@@ -47,24 +47,13 @@ def build(setup_kwargs: Any) -> None:
     if getenv_bool("SKIP_CYTHON"):
         return
     try:
-        from Cython.Build import cythonize
-
         setup_kwargs.update(
             {
-                "ext_modules": cythonize(
-                    [
-                        ulid_module,
-                    ],
-                    compiler_directives={"language_level": "3"},  # Python 3
-                    verbose=True,
-                ),
+                "ext_modules": [ulid_module],
                 "cmdclass": {"build_ext": BuildExt},
             }
         )
-        setup_kwargs["exclude_package_data"] = {
-            pkg: ["_ulid_impl.cpp"] for pkg in setup_kwargs["packages"]
-        }
     except Exception:
-        logging.exception("Failed to configure cython")
+        logging.exception("Failed to configure C extension")
         if getenv_bool("REQUIRE_CYTHON"):
             raise

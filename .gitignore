@@ -140,7 +140,6 @@ dmypy.json
 cython_debug/
 
 # Generated Cython files
-src/ulid_transform/*.cpp
 src/ulid_transform/*.html
 
 # PyCharm files
