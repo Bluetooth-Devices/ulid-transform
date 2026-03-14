@@ -18,7 +18,7 @@
   <a href="https://github.com/pre-commit/pre-commit">
     <img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=flat-square" alt="pre-commit">
   </a>
-  <a href="https://codspeed.io/bluetooth-devices/ulid-transform"><img src="https://img.shields.io/endpoint?url=https://codspeed.io/badge.json" alt="CodSpeed Badge"/></a>
+  <a href="https://codspeed.io/Bluetooth-Devices/ulid-transform"><img src="https://img.shields.io/endpoint?url=https://codspeed.io/badge.json" alt="CodSpeed Badge"/></a>
 </p>
 <p align="center">
   <a href="https://pypi.org/project/ulid-transform/">
