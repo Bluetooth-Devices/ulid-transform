@@ -46,8 +46,8 @@ jobs:
           - ubuntu-latest
           - macOS-latest
         extension:
-          - "skip_cython"
-          - "use_cython"
+          - "skip_extension"
+          - "use_extension"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -62,17 +62,17 @@ jobs:
         # appears to hide the output of `pip install` commands (and possibly
         # doesn't pass all environment variables through to the build)
         run: |
-          env CYTHON_FORCE_REGEN=1 pip install --no-cache -v -e .
+          pip install --no-cache -v -e .
           poetry install --only=main,dev
         shell: bash
         env:
-          REQUIRE_CYTHON: ${{ matrix.extension == 'use_cython' }}
-          SKIP_CYTHON: ${{ matrix.extension == 'skip_cython' }}
+          REQUIRE_EXTENSION: ${{ matrix.extension == 'use_extension' }}
+          SKIP_EXTENSION: ${{ matrix.extension == 'skip_extension' }}
       - name: Test with Pytest
         run: poetry run pytest -v -Wdefault --cov=ulid_transform --cov-report=term-missing:skip-covered --cov-report=xml tests
         shell: bash
         env:
-          REQUIRE_CYTHON: ${{ matrix.extension == 'use_cython' }}
+          REQUIRE_EXTENSION: ${{ matrix.extension == 'use_extension' }}
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
@@ -94,8 +94,7 @@ jobs:
         shell: alpine.sh --root {0}
       - name: Install Dependencies
         run: |
-          poetry add Cython
-          REQUIRE_CYTHON=1 poetry -vvv install --only=main,dev
+          REQUIRE_EXTENSION=1 poetry -vvv install --only=main,dev
         shell: alpine.sh --root {0}
       - name: Test with Pytest
         run: poetry run pytest -v -Wdefault --cov=ulid_transform --cov-report=term-missing:skip-covered --cov-report=xml tests
@@ -120,7 +119,7 @@ jobs:
       - name: Install Dependencies
         run: poetry install --only=main,dev,benchmark
         env:
-          REQUIRE_CYTHON: 1
+          REQUIRE_EXTENSION: 1
       - name: Run benchmarks
         run: |
           poetry run pytest bench --benchmark-autosave
@@ -141,7 +140,7 @@ jobs:
       - uses: snok/install-poetry@v1.4.1
       - name: Install Dependencies
         run: |
-          REQUIRE_CYTHON=1 poetry install --only=main,dev
+          REQUIRE_EXTENSION=1 poetry install --only=main,dev
         shell: bash
       - name: Run benchmarks
         uses: CodSpeedHQ/action@v4
@@ -303,7 +302,7 @@ jobs:
         uses: pypa/cibuildwheel@v3.3.1
         env:
           CIBW_SKIP: cp36-* cp37-* cp38-* cp39-* cp310-* pp* ${{ matrix.musl == 'musllinux' && '*manylinux*' || '*musllinux*' }}
-          REQUIRE_CYTHON: 1
+          REQUIRE_EXTENSION: 1
 
       - uses: actions/upload-artifact@v6
         with:

@@ -39,12 +39,12 @@ class BuildExt(build_ext):
             super().build_extensions()
         except Exception:  # nosec
             logging.exception("Failed to build extensions")
-            if getenv_bool("REQUIRE_CYTHON"):
+            if getenv_bool("REQUIRE_EXTENSION"):
                 raise
 
 
 def build(setup_kwargs: Any) -> None:
-    if getenv_bool("SKIP_CYTHON"):
+    if getenv_bool("SKIP_EXTENSION"):
         return
     try:
         setup_kwargs.update(
@@ -55,5 +55,5 @@ def build(setup_kwargs: Any) -> None:
         )
     except Exception:
         logging.exception("Failed to configure C extension")
-        if getenv_bool("REQUIRE_CYTHON"):
+        if getenv_bool("REQUIRE_EXTENSION"):
             raise
