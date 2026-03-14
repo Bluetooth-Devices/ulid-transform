@@ -67,8 +67,8 @@ inline void EncodeEntropyMt19937Fast(ULID& ulid)
         // Use multiple entropy sources for seeding
         std::array<uint32_t, 3> seed_data = {
             static_cast<uint32_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count()),
-            static_cast<uint32_t>(std::random_device {}()),
-            static_cast<uint32_t>(std::hash<std::thread::id> {}(std::this_thread::get_id()))
+            static_cast<uint32_t>(std::random_device { }()),
+            static_cast<uint32_t>(std::hash<std::thread::id> { }(std::this_thread::get_id()))
         };
         std::seed_seq seed_seq(seed_data.begin(), seed_data.end());
         return std::mt19937(seed_seq);
