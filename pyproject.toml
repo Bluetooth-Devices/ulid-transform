@@ -82,6 +82,7 @@ exclude = [
 [[tool.mypy.overrides]]
 module = "tests.*"
 allow_untyped_defs = true
+warn_unused_ignores = false
 
 [[tool.mypy.overrides]]
 module = "bench.*"
