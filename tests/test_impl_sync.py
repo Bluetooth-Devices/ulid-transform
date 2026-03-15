@@ -5,9 +5,15 @@ import ulid_transform
 
 def get_signature_string(func):
     """Get a comparable signature string from a function."""
-    # Doctor the signature to remove quotes - this should be good enough to
-    # just get rid of the quoting around deferred annotations.
-    return repr(signature(func)).replace("'", "")
+    sig = signature(func)
+    # Strip type annotations and positional-only markers for comparison
+    # since C extensions cannot express them via __text_signature__.
+    params = [
+        p.replace(annotation=p.empty, kind=p.POSITIONAL_OR_KEYWORD)
+        for p in sig.parameters.values()
+    ]
+    sig = sig.replace(parameters=params, return_annotation=sig.empty)
+    return repr(sig).replace("'", "")
 
 
 def test_impl_exports_required_keys(impl):
