@@ -9,15 +9,15 @@
 #endif
 
 #if defined(__has_builtin)
-#  if __has_builtin(__builtin_expect)
-#    define ULID_LIKELY(x) __builtin_expect(!!(x), 1)
-#  else
-#    define ULID_LIKELY(x) (x)
-#  endif
-#elif defined(__GNUC__)
-#  define ULID_LIKELY(x) __builtin_expect(!!(x), 1)
+#if __has_builtin(__builtin_expect)
+#define ULID_LIKELY(x) __builtin_expect(!!(x), 1)
 #else
-#  define ULID_LIKELY(x) (x)
+#define ULID_LIKELY(x) (x)
+#endif
+#elif defined(__GNUC__)
+#define ULID_LIKELY(x) __builtin_expect(!!(x), 1)
+#else
+#define ULID_LIKELY(x) (x)
 #endif
 
 constexpr Py_ssize_t ULID_BYTES_LEN = 16;
