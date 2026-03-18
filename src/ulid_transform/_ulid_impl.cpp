@@ -1,14 +1,50 @@
 #include "Python.h"
 
+#include <string.h>
+
 #ifdef __SIZEOF_INT128__
 #include "ulid_uint128.hh"
 #else
 #include "ulid_struct.hh"
 #endif
 
+#if defined(__has_builtin)
+#  if __has_builtin(__builtin_expect)
+#    define ULID_LIKELY(x) __builtin_expect(!!(x), 1)
+#  else
+#    define ULID_LIKELY(x) (x)
+#  endif
+#elif defined(__GNUC__)
+#  define ULID_LIKELY(x) __builtin_expect(!!(x), 1)
+#else
+#  define ULID_LIKELY(x) (x)
+#endif
+
 constexpr Py_ssize_t ULID_BYTES_LEN = 16;
 constexpr Py_ssize_t ULID_TEXT_LEN = 26;
 constexpr Py_ssize_t ULID_HEX_LEN = 32;
+
+/**
+ * Create a PyUnicode object from a known-ASCII buffer without validation.
+ * All callers MUST GUARANTEE the buffer contains only ASCII characters.
+ */
+static inline PyObject*
+unicode_from_ascii_buf(const char* buf, Py_ssize_t len)
+{
+    PyObject* str = PyUnicode_New(len, 127);
+    if (!str) {
+        return NULL;
+    }
+    // This is likely on any and all current versions of CPython.
+    if (ULID_LIKELY(PyUnicode_IS_COMPACT_ASCII(str))) {
+        memcpy(PyUnicode_DATA(str), buf, len);
+    } else {
+        // Unexpected layout; copy character-by-character via public API.
+        for (Py_ssize_t i = 0; i < len; i++)
+            PyUnicode_WriteChar(str, i, (unsigned char)buf[i]);
+    }
+    return str;
+}
 
 static inline void
 hexlify_16(const uint8_t b[ULID_BYTES_LEN], char dst[ULID_HEX_LEN])
@@ -39,7 +75,7 @@ py_ulid_hex(PyObject* module, PyObject* Py_UNUSED(ignored))
     ulid::MarshalBinaryTo(ulid, buf);
     char hex[ULID_HEX_LEN];
     hexlify_16(buf, hex);
-    return PyUnicode_DecodeASCII(hex, ULID_HEX_LEN, NULL);
+    return unicode_from_ascii_buf(hex, ULID_HEX_LEN); // SAFETY: Hexadecimal digits are ASCII characters
 }
 
 /* ulid_now_bytes() -> bytes */
@@ -78,7 +114,7 @@ py_ulid_now(PyObject* module, PyObject* Py_UNUSED(ignored))
     ulid::EncodeEntropyMt19937Fast(ulid);
     char buf[ULID_TEXT_LEN];
     ulid::MarshalTo(ulid, buf);
-    return PyUnicode_DecodeASCII(buf, ULID_TEXT_LEN, NULL);
+    return unicode_from_ascii_buf(buf, ULID_TEXT_LEN); // SAFETY: text ULIDs are ASCII
 }
 
 /* ulid_at_time(timestamp) -> str */
@@ -93,7 +129,7 @@ py_ulid_at_time(PyObject* module, PyObject* arg)
     ulid::EncodeEntropyMt19937Fast(ulid);
     char buf[ULID_TEXT_LEN];
     ulid::MarshalTo(ulid, buf);
-    return PyUnicode_DecodeASCII(buf, ULID_TEXT_LEN, NULL);
+    return unicode_from_ascii_buf(buf, ULID_TEXT_LEN); // SAFETY: text ULIDs are ASCII
 }
 
 /* ulid_to_bytes(value) -> bytes */
@@ -137,7 +173,7 @@ py_bytes_to_ulid(PyObject* module, PyObject* arg)
     }
     char buf[ULID_TEXT_LEN];
     ulid::EncodeBase32From((const uint8_t*)PyBytes_AS_STRING(arg), buf);
-    return PyUnicode_DecodeASCII(buf, ULID_TEXT_LEN, NULL);
+    return unicode_from_ascii_buf(buf, ULID_TEXT_LEN); // SAFETY: base32 is ASCII
 }
 
 /* ulid_to_bytes_or_none(ulid) -> bytes | None */
@@ -165,7 +201,7 @@ py_bytes_to_ulid_or_none(PyObject* module, PyObject* arg)
         Py_RETURN_NONE;
     char buf[ULID_TEXT_LEN];
     ulid::EncodeBase32From((const uint8_t*)PyBytes_AS_STRING(arg), buf);
-    return PyUnicode_DecodeASCII(buf, ULID_TEXT_LEN, NULL);
+    return unicode_from_ascii_buf(buf, ULID_TEXT_LEN); // SAFETY: base32 is ASCII
 }
 
 /* ulid_to_timestamp(ulid) -> int */
