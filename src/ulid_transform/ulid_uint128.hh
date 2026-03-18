@@ -9,13 +9,8 @@
 #include <random>
 #include <vector>
 
+#include "splitmix64.hh"
 #include "ulid_base32.hh"
-
-#if _MSC_VER > 0
-typedef uint32_t rand_t;
-#else
-typedef uint8_t rand_t;
-#endif
 
 namespace ulid {
 
@@ -75,23 +70,23 @@ inline void EncodeTimeSystemClockNow(ULID& ulid)
 }
 
 /**
- * EncodeEntropyMt19937Fast will encode using std::mt19937
- * with only 3 generated values.
+ * EncodeEntropyFast will encode using SplitMix64
+ * with only 2 generated values (providing 128 bits, of which 80 are used).
  * */
-inline void EncodeEntropyMt19937Fast(ULID& ulid)
+inline void EncodeEntropyFast(ULID& ulid)
 {
-    static thread_local std::mt19937 gen([]() {
+    static thread_local SplitMix64 gen([]() {
         // Use multiple entropy sources for seeding
-        std::array<uint32_t, 3> seed_data = {
-            static_cast<uint32_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count()),
-            static_cast<uint32_t>(std::random_device { }()),
-            static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&gen) & 0xFFFFFFFF)
-        };
-        std::seed_seq seed_seq(seed_data.begin(), seed_data.end());
-        return std::mt19937(seed_seq);
+        uint64_t seed = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        seed ^= static_cast<uint64_t>(std::random_device { }()) << 32;
+        seed ^= static_cast<uint64_t>(std::random_device { }());
+        return seed;
     }());
+    constexpr ULID lower80 = (static_cast<ULID>(1) << 80) - 1;
     ulid = (ulid >> 80) << 80; // Clear lower 80 bits
-    ulid |= (static_cast<ULID>((static_cast<uint64_t>(gen()) << 32) | gen()) << 16) | (gen() & 0xFFFF);
+    uint64_t first_draw = gen();
+    uint64_t second_draw = gen();
+    ulid |= ((static_cast<ULID>(first_draw) << 16) | (second_draw & 0xFFFF)) & lower80;
 }
 
 /**
