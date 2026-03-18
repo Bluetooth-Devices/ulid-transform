@@ -10,13 +10,8 @@
 #include <thread>
 #include <vector>
 
+#include "splitmix64.hh"
 #include "ulid_base32.hh"
-
-#if _MSC_VER > 0
-typedef uint32_t rand_t;
-#else
-typedef uint8_t rand_t;
-#endif
 
 namespace ulid {
 
@@ -60,31 +55,28 @@ inline void EncodeTimeSystemClockNow(ULID& ulid)
 }
 
 /**
- * EncodeEntropyMt19937Fast will encode using std::mt19937
- * with only 3 generated values.
+ * EncodeEntropyFast will encode using SplitMix64
+ * with only 2 generated values.
  * */
-inline void EncodeEntropyMt19937Fast(ULID& ulid)
+inline void EncodeEntropyFast(ULID& ulid)
 {
-    static thread_local std::mt19937 gen([]() {
+    static thread_local SplitMix64 gen([]() {
         // Use multiple entropy sources for seeding
-        std::array<uint32_t, 3> seed_data = {
-            static_cast<uint32_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count()),
-            static_cast<uint32_t>(std::random_device { }()),
-            static_cast<uint32_t>(std::hash<std::thread::id> { }(std::this_thread::get_id()))
-        };
-        std::seed_seq seed_seq(seed_data.begin(), seed_data.end());
-        return std::mt19937(seed_seq);
+        uint64_t seed = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        seed ^= static_cast<uint64_t>(std::random_device { }()) << 32;
+        seed ^= static_cast<uint64_t>(std::random_device { }());
+        return seed;
     }());
-    uint64_t high = (static_cast<uint64_t>(gen()) << 32) | gen();
-    uint32_t low = gen();
-    ulid.data[6] = (high >> 40) & 0xFF;
-    ulid.data[7] = (high >> 32) & 0xFF;
-    ulid.data[8] = (high >> 24) & 0xFF;
-    ulid.data[9] = (high >> 16) & 0xFF;
-    ulid.data[10] = (high >> 8) & 0xFF;
-    ulid.data[11] = high & 0xFF;
-    ulid.data[12] = (low >> 24) & 0xFF;
-    ulid.data[13] = (low >> 16) & 0xFF;
+    uint64_t high = gen();
+    uint64_t low = gen();
+    ulid.data[6] = (high >> 56) & 0xFF;
+    ulid.data[7] = (high >> 48) & 0xFF;
+    ulid.data[8] = (high >> 40) & 0xFF;
+    ulid.data[9] = (high >> 32) & 0xFF;
+    ulid.data[10] = (high >> 24) & 0xFF;
+    ulid.data[11] = (high >> 16) & 0xFF;
+    ulid.data[12] = (high >> 8) & 0xFF;
+    ulid.data[13] = high & 0xFF;
     ulid.data[14] = (low >> 8) & 0xFF;
     ulid.data[15] = low & 0xFF;
 }
