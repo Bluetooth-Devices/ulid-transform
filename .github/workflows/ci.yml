@@ -48,6 +48,13 @@ jobs:
         extension:
           - "skip_extension"
           - "use_extension"
+        include:
+          - python-version: "3.13"
+            os: windows-latest
+            extension: "skip_extension"
+          - python-version: "3.13"
+            os: windows-latest
+            extension: "use_extension"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
