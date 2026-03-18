@@ -70,7 +70,7 @@ py_ulid_hex(PyObject* module, PyObject* Py_UNUSED(ignored))
 {
     ulid::ULID ulid;
     ulid::EncodeTimeSystemClockNow(ulid);
-    ulid::EncodeEntropyMt19937Fast(ulid);
+    ulid::EncodeEntropyFast(ulid);
     uint8_t buf[ULID_BYTES_LEN];
     ulid::MarshalBinaryTo(ulid, buf);
     char hex[ULID_HEX_LEN];
@@ -84,7 +84,7 @@ py_ulid_now_bytes(PyObject* module, PyObject* Py_UNUSED(ignored))
 {
     ulid::ULID ulid;
     ulid::EncodeTimeSystemClockNow(ulid);
-    ulid::EncodeEntropyMt19937Fast(ulid);
+    ulid::EncodeEntropyFast(ulid);
     uint8_t buf[ULID_BYTES_LEN];
     ulid::MarshalBinaryTo(ulid, buf);
     return PyBytes_FromStringAndSize((const char*)buf, ULID_BYTES_LEN);
@@ -99,7 +99,7 @@ py_ulid_at_time_bytes(PyObject* module, PyObject* arg)
         return NULL;
     ulid::ULID ulid;
     ulid::EncodeTimestamp(static_cast<int64_t>(ts * 1000), ulid);
-    ulid::EncodeEntropyMt19937Fast(ulid);
+    ulid::EncodeEntropyFast(ulid);
     uint8_t buf[ULID_BYTES_LEN];
     ulid::MarshalBinaryTo(ulid, buf);
     return PyBytes_FromStringAndSize((const char*)buf, ULID_BYTES_LEN);
@@ -111,7 +111,7 @@ py_ulid_now(PyObject* module, PyObject* Py_UNUSED(ignored))
 {
     ulid::ULID ulid;
     ulid::EncodeTimeSystemClockNow(ulid);
-    ulid::EncodeEntropyMt19937Fast(ulid);
+    ulid::EncodeEntropyFast(ulid);
     char buf[ULID_TEXT_LEN];
     ulid::MarshalTo(ulid, buf);
     return unicode_from_ascii_buf(buf, ULID_TEXT_LEN); // SAFETY: text ULIDs are ASCII
@@ -126,7 +126,7 @@ py_ulid_at_time(PyObject* module, PyObject* arg)
         return NULL;
     ulid::ULID ulid;
     ulid::EncodeTimestamp(static_cast<int64_t>(ts * 1000), ulid);
-    ulid::EncodeEntropyMt19937Fast(ulid);
+    ulid::EncodeEntropyFast(ulid);
     char buf[ULID_TEXT_LEN];
     ulid::MarshalTo(ulid, buf);
     return unicode_from_ascii_buf(buf, ULID_TEXT_LEN); // SAFETY: text ULIDs are ASCII
