@@ -106,6 +106,23 @@ def test_ulid_to_bytes_or_none(impl):
     assert impl.ulid_to_bytes_or_none(None) is None
 
 
+def test_entropy(impl):
+    """Verify generated ULIDs have non-trivial entropy in the random part."""
+    samples = [impl.ulid_at_time_bytes(1677627631.0)[6:] for _ in range(200)]
+    assert len(set(samples)) == len(samples), (
+        "Generated ULIDs should have unique entropy"
+    )
+
+    for pos in range(10):
+        distinct_bytes = {s[pos] for s in samples}
+        assert len(distinct_bytes) > 1, f"Byte position {pos} has no variety"
+
+    for pos in range(20):
+        byte_idx, shift = divmod(pos, 2)
+        distinct_nibbles = {(s[byte_idx] >> (4 * shift)) & 0xF for s in samples}
+        assert len(distinct_nibbles) > 1, f"Nibble position {pos} has no variety"
+
+
 def test_bytes_to_ulid_or_none(impl):
     """Test bytes_to_ulid_or_none."""
     assert (
