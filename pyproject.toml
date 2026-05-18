@@ -23,9 +23,13 @@ classifiers = [
 packages = [
     { include = "ulid_transform", from = "src" },
 ]
+include = [
+    { path = "src/ulid_transform/*.so", format = "wheel" },
+    { path = "src/ulid_transform/*.pyd", format = "wheel" },
+]
 
 [tool.poetry.build]
-generate-setup-file = true
+generate-setup-file = false
 script = "build_ext.py"
 
 [tool.poetry.dependencies]
