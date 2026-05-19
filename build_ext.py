@@ -2,6 +2,7 @@
 
 import logging
 import os
+import sys
 from distutils.command.build_ext import build_ext
 from os.path import join
 from typing import Any
@@ -58,3 +59,35 @@ def build(setup_kwargs: Any) -> None:
         logging.exception("Failed to configure C extension")
         if getenv_bool("REQUIRE_CYTHON") or getenv_bool("REQUIRE_EXTENSION"):
             raise
+
+
+def _run_main() -> None:
+    """Build the C extension when invoked directly.
+
+    poetry-core calls ``python build_ext.py`` (no args) during the wheel
+    build when ``generate-setup-file = false`` is set in
+    ``pyproject.toml``.  We synthesise a ``setuptools.setup()`` call with
+    an in-place ``build_ext`` so the compiled extension lands next to its
+    sources in ``src/ulid_transform/`` where poetry-core's
+    ``find_files_to_add`` picks it up.  ``generate-setup-file = false``
+    is set so the sdist does not ship a generated ``setup.py`` that does
+    ``from build_ext import *``, which fails under
+    ``PYTHONSAFEPATH=1`` (see issue #137).
+    """
+    from setuptools import setup
+
+    setup_kwargs: dict[str, Any] = {
+        "name": "ulid-transform",
+        "packages": ["ulid_transform"],
+        "package_dir": {"": "src"},
+    }
+    build(setup_kwargs)
+    if "ext_modules" not in setup_kwargs:
+        return
+    if len(sys.argv) == 1:
+        sys.argv.extend(["build_ext", "--inplace"])
+    setup(**setup_kwargs)
+
+
+if __name__ == "__main__":
+    _run_main()
