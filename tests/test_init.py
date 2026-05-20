@@ -106,6 +106,28 @@ def test_ulid_to_bytes_or_none(impl):
     assert impl.ulid_to_bytes_or_none(None) is None
 
 
+@pytest.mark.parametrize(
+    "value",
+    [
+        123,
+        3.14,
+        [],
+        (),
+        {},
+        b"\x01w\xaf\xf9w\xe5\xf8~\x1f\x87\xe1\xf8~\x1f\x87\xe1",  # bytes, not str
+        object(),
+    ],
+)
+def test_ulid_to_bytes_or_none_invalid_type(impl, value):
+    """Non-str inputs return None instead of raising (parity with C impl)."""
+    assert impl.ulid_to_bytes_or_none(value) is None
+
+
+def test_ulid_to_bytes_or_none_non_ascii(impl):
+    """Non-ASCII 26-char strings return None instead of raising."""
+    assert impl.ulid_to_bytes_or_none("é" * 26) is None
+
+
 def test_entropy(impl):
     """Verify generated ULIDs have non-trivial entropy in the random part."""
     samples = [impl.ulid_at_time_bytes(1677627631.0)[6:] for _ in range(200)]
@@ -133,3 +155,20 @@ def test_bytes_to_ulid_or_none(impl):
     )
     assert impl.bytes_to_ulid_or_none(b"invalid") is None
     assert impl.bytes_to_ulid_or_none(None) is None
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        123,
+        3.14,
+        [],
+        (),
+        {},
+        "01EYQZJXZ5Z1Z1Z1Z1Z1Z1Z1Z1",  # str, not bytes
+        object(),
+    ],
+)
+def test_bytes_to_ulid_or_none_invalid_type(impl, value):
+    """Non-bytes inputs return None instead of raising (parity with C impl)."""
+    assert impl.bytes_to_ulid_or_none(value) is None
