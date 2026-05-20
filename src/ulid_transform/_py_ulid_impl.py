@@ -457,7 +457,5 @@ def ulid_to_timestamp(ulid: str | bytes) -> int:
     elif isinstance(ulid, str):
         ulid_bytes = ulid_to_bytes(ulid)
     else:
-        raise TypeError(
-            f"ULID must be a string or bytes, not {type(ulid).__name__}"
-        )
+        raise TypeError(f"ULID must be a string or bytes, not {type(ulid).__name__}")
     return int.from_bytes(b"\x00\x00" + ulid_bytes[:6], "big")

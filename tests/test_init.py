@@ -148,7 +148,9 @@ def test_ulid_to_timestamp_wrong_type(impl):
     with pytest.raises(TypeError):
         impl.ulid_to_timestamp(None)
     with pytest.raises(TypeError):
-        impl.ulid_to_timestamp(bytearray(b"\x01\x86\x99?\xe8\xf3\x11\xbc\xed\xef\x86U.9\x03z"))
+        impl.ulid_to_timestamp(
+            bytearray(b"\x01\x86\x99?\xe8\xf3\x11\xbc\xed\xef\x86U.9\x03z")
+        )
 
 
 def test_bytes_to_ulid_or_none(impl):
