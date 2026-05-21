@@ -41,6 +41,10 @@ _xfail_pr_206 = pytest.mark.xfail(
 _xfail_pr_208 = pytest.mark.xfail(
     reason="open PR #208: align ulid_to_timestamp validation", strict=False
 )
+_xfail_pr_209 = pytest.mark.xfail(
+    reason="open PR #209: C base32 decoder lacks lowercase + Crockford alias support",
+    strict=False,
+)
 _xfail_issue_210_strict_input = pytest.mark.xfail(
     reason="issue #210: Py accepts bytearray/memoryview/bytes where C requires strict type",
     strict=False,
@@ -107,7 +111,7 @@ def test_bytes_to_ulid_parity(value):
 
 _ULID_TO_BYTES_CASES = [
     pytest.param(_VALID_ULID_STR, id="valid-upper"),
-    pytest.param(_VALID_ULID_BYTES_LOWER, id="valid-lower"),
+    pytest.param(_VALID_ULID_BYTES_LOWER, marks=_xfail_pr_209, id="valid-lower"),
     pytest.param("", id="empty-str"),
     pytest.param("short", id="short-str"),
     pytest.param("X" * 27, id="too-long-str"),
@@ -160,7 +164,7 @@ def test_ulid_to_timestamp_parity(value):
 _ULID_TO_BYTES_OR_NONE_CASES = [
     pytest.param(None, id="none"),
     pytest.param(_VALID_ULID_STR, id="valid-str"),
-    pytest.param(_VALID_ULID_BYTES_LOWER, id="valid-lower"),
+    pytest.param(_VALID_ULID_BYTES_LOWER, marks=_xfail_pr_209, id="valid-lower"),
     pytest.param("", id="empty"),
     pytest.param("short", id="short"),
     pytest.param("é" * 26, id="non-ascii-26"),
@@ -213,6 +217,12 @@ _AT_TIME_INVALID = [
     pytest.param("not-a-float", marks=_xfail_issue_210_exc_type, id="str"),
     pytest.param(-1.0, marks=_xfail_issue_210_overflow, id="negative"),
     pytest.param(1e18, marks=_xfail_issue_210_overflow, id="huge"),
+    # NaN / inf: Py raises on float->int conversion, C casts the NaN/inf
+    # double to int64_t which is undefined behavior in C++ (typically yields
+    # 0 or INT64_MIN), then silently produces a "ULID" with that timestamp.
+    pytest.param(float("nan"), marks=_xfail_issue_210_overflow, id="nan"),
+    pytest.param(float("inf"), marks=_xfail_issue_210_overflow, id="inf"),
+    pytest.param(float("-inf"), marks=_xfail_issue_210_overflow, id="neg-inf"),
 ]
 
 
@@ -293,22 +303,33 @@ def test_ulid_hex_shape():
 # --------------------------------------------------------------------------- #
 
 # Sample of ULID strings spanning the alphabet — mixed-case where allowed.
-_ROUND_TRIP_SAMPLES = [
-    "00000000000000000000000000",
-    "7ZZZZZZZZZZZZZZZZZZZZZZZZZ",
-    _VALID_ULID_STR,
-    _VALID_ULID_BYTES_LOWER,
-    "01GTCKZT7K26yevvw6amq3j0vt",  # mixed case
+# Lowercase / mixed-case cases depend on PR #209 (C base32 alias support); on
+# main the C decoder silently produces wrong bytes for non-uppercase input,
+# so they're xfailed until that PR lands.
+_ROUND_TRIP_DECODE_SAMPLES = [
+    pytest.param("00000000000000000000000000", id="all-zero"),
+    pytest.param("7ZZZZZZZZZZZZZZZZZZZZZZZZZ", id="all-z-upper"),
+    pytest.param(_VALID_ULID_STR, id="valid-upper"),
+    pytest.param(_VALID_ULID_BYTES_LOWER, marks=_xfail_pr_209, id="valid-lower"),
+    pytest.param("01GTCKZT7K26yevvw6amq3j0vt", marks=_xfail_pr_209, id="valid-mixed"),
 ]
 
 
-@pytest.mark.parametrize("ulid_str", _ROUND_TRIP_SAMPLES)
+@pytest.mark.parametrize("ulid_str", _ROUND_TRIP_DECODE_SAMPLES)
 def test_ulid_to_bytes_byte_equal(ulid_str):
     """C and Py decode to identical bytes — no silent divergence."""
     assert py_impl.ulid_to_bytes(ulid_str) == c_impl.ulid_to_bytes(ulid_str)
 
 
-@pytest.mark.parametrize("ulid_str", _ROUND_TRIP_SAMPLES)
+# Encode path takes canonical uppercase bytes only — no PR #209 dependency.
+_ROUND_TRIP_ENCODE_SAMPLES = [
+    "00000000000000000000000000",
+    "7ZZZZZZZZZZZZZZZZZZZZZZZZZ",
+    _VALID_ULID_STR,
+]
+
+
+@pytest.mark.parametrize("ulid_str", _ROUND_TRIP_ENCODE_SAMPLES)
 def test_bytes_to_ulid_byte_equal(ulid_str):
     """Encode the canonical-uppercase bytes; both impls produce the same string."""
     raw = py_impl.ulid_to_bytes(ulid_str)
