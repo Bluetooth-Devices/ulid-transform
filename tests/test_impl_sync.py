@@ -84,9 +84,17 @@ def test_parity_ulid_to_bytes_mixed_case():
 
 
 @pytestmark_parity
-@pytest.mark.parametrize("alias_char,canonical", [
-    ("I", "1"), ("i", "1"), ("L", "1"), ("l", "1"), ("O", "0"), ("o", "0"),
-])
+@pytest.mark.parametrize(
+    "alias_char,canonical",
+    [
+        ("I", "1"),
+        ("i", "1"),
+        ("L", "1"),
+        ("l", "1"),
+        ("O", "0"),
+        ("o", "0"),
+    ],
+)
 def test_parity_crockford_aliases(alias_char, canonical):
     """I/L (any case) -> 1, O (any case) -> 0; both impls must agree."""
     base = "01GTCKZT7K26YEVVW6AMQ3J0VT"
@@ -130,5 +138,9 @@ def test_parity_or_none_valid_inputs():
 @pytestmark_parity
 def test_parity_or_none_invalid_lengths():
     """_or_none variants return None for length-invalid (but type-correct) input."""
-    assert _c_impl.ulid_to_bytes_or_none("short") == _py_impl.ulid_to_bytes_or_none("short")
-    assert _c_impl.bytes_to_ulid_or_none(b"short") == _py_impl.bytes_to_ulid_or_none(b"short")
+    assert _c_impl.ulid_to_bytes_or_none("short") == _py_impl.ulid_to_bytes_or_none(
+        "short"
+    )
+    assert _c_impl.bytes_to_ulid_or_none(b"short") == _py_impl.bytes_to_ulid_or_none(
+        b"short"
+    )

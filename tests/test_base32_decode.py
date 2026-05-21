@@ -22,7 +22,10 @@ def test_mixed_case_decodes(impl, ulid):
     assert impl.ulid_to_bytes(ulid) == _REF_BYTES
 
 
-@pytest.mark.parametrize("alias,canon", [("I", "1"), ("i", "1"), ("L", "1"), ("l", "1"), ("O", "0"), ("o", "0")])
+@pytest.mark.parametrize(
+    "alias,canon",
+    [("I", "1"), ("i", "1"), ("L", "1"), ("l", "1"), ("O", "0"), ("o", "0")],
+)
 def test_crockford_aliases(impl, alias, canon):
     """I/L (any case) decode as 1, O (any case) decodes as 0."""
     aliased = alias + _REF_ULID[1:]
