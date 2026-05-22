@@ -40,16 +40,6 @@ _VALID_ULID_STR_LOWER = "01gtckzt7k26yevvw6amq3j0vt"
 # Markers for tracked divergences. ``strict=False`` so an unexpected pass
 # becomes a visible XPASS (not a failure) — that's the signal to remove the
 # marker once the upstream PR lands.
-_xfail_pr_206 = pytest.mark.xfail(
-    reason="open PR #206: align *_or_none type tolerance", strict=False
-)
-_xfail_pr_208 = pytest.mark.xfail(
-    reason="open PR #208: align ulid_to_timestamp validation", strict=False
-)
-_xfail_pr_209 = pytest.mark.xfail(
-    reason="open PR #209: C base32 decoder lacks lowercase + Crockford alias support",
-    strict=False,
-)
 _xfail_issue_210_strict_input = pytest.mark.xfail(
     reason="issue #210: Py accepts bytearray/memoryview/bytes where C requires strict type",
     strict=False,
@@ -116,7 +106,7 @@ def test_bytes_to_ulid_parity(value):
 
 _ULID_TO_BYTES_CASES = [
     pytest.param(_VALID_ULID_STR, id="valid-upper"),
-    pytest.param(_VALID_ULID_STR_LOWER, marks=_xfail_pr_209, id="valid-lower"),
+    pytest.param(_VALID_ULID_STR_LOWER, id="valid-lower"),
     pytest.param("", id="empty-str"),
     pytest.param("short", id="short-str"),
     pytest.param("X" * 27, id="too-long-str"),
@@ -150,10 +140,10 @@ _ULID_TO_TIMESTAMP_CASES = [
     pytest.param("short", id="short-str"),
     pytest.param(123, id="int"),
     pytest.param(None, id="none"),
-    pytest.param(b"short", marks=_xfail_pr_208, id="short-bytes"),
-    pytest.param(b"\x00" * 17, marks=_xfail_pr_208, id="too-long-bytes"),
-    pytest.param(bytearray(16), marks=_xfail_pr_208, id="bytearray-16"),
-    pytest.param(memoryview(b"\x00" * 16), marks=_xfail_pr_208, id="memoryview-16"),
+    pytest.param(b"short", id="short-bytes"),
+    pytest.param(b"\x00" * 17, id="too-long-bytes"),
+    pytest.param(bytearray(16), id="bytearray-16"),
+    pytest.param(memoryview(b"\x00" * 16), id="memoryview-16"),
 ]
 
 
@@ -169,14 +159,14 @@ def test_ulid_to_timestamp_parity(value):
 _ULID_TO_BYTES_OR_NONE_CASES = [
     pytest.param(None, id="none"),
     pytest.param(_VALID_ULID_STR, id="valid-str"),
-    pytest.param(_VALID_ULID_STR_LOWER, marks=_xfail_pr_209, id="valid-lower"),
+    pytest.param(_VALID_ULID_STR_LOWER, id="valid-lower"),
     pytest.param("", id="empty"),
     pytest.param("short", id="short"),
     pytest.param("é" * 26, id="non-ascii-26"),
-    pytest.param(123, marks=_xfail_pr_206, id="int"),
-    pytest.param(b"x" * 26, marks=_xfail_pr_206, id="bytes-26"),
-    pytest.param([0] * 26, marks=_xfail_pr_206, id="list-26"),
-    pytest.param(object(), marks=_xfail_pr_206, id="object"),
+    pytest.param(123, id="int"),
+    pytest.param(b"x" * 26, id="bytes-26"),
+    pytest.param([0] * 26, id="list-26"),
+    pytest.param(object(), id="object"),
 ]
 
 
@@ -196,11 +186,11 @@ _BYTES_TO_ULID_OR_NONE_CASES = [
     pytest.param(b"short", id="short"),
     pytest.param(b"", id="empty"),
     pytest.param(b"\x00" * 17, id="too-long"),
-    pytest.param(123, marks=_xfail_pr_206, id="int"),
-    pytest.param("x" * 16, marks=_xfail_pr_206, id="str-16"),
-    pytest.param(bytearray(16), marks=_xfail_pr_206, id="bytearray-16"),
-    pytest.param([0] * 16, marks=_xfail_pr_206, id="list-16"),
-    pytest.param(object(), marks=_xfail_pr_206, id="object"),
+    pytest.param(123, id="int"),
+    pytest.param("x" * 16, id="str-16"),
+    pytest.param(bytearray(16), id="bytearray-16"),
+    pytest.param([0] * 16, id="list-16"),
+    pytest.param(object(), id="object"),
 ]
 
 
@@ -326,15 +316,12 @@ def test_ulid_hex_shape():
 # --------------------------------------------------------------------------- #
 
 # Sample of ULID strings spanning the alphabet — mixed-case where allowed.
-# Lowercase / mixed-case cases depend on PR #209 (C base32 alias support); on
-# main the C decoder silently produces wrong bytes for non-uppercase input,
-# so they're xfailed until that PR lands.
 _ROUND_TRIP_DECODE_SAMPLES = [
     pytest.param("00000000000000000000000000", id="all-zero"),
     pytest.param("7ZZZZZZZZZZZZZZZZZZZZZZZZZ", id="all-z-upper"),
     pytest.param(_VALID_ULID_STR, id="valid-upper"),
-    pytest.param(_VALID_ULID_STR_LOWER, marks=_xfail_pr_209, id="valid-lower"),
-    pytest.param("01GTCKZT7K26yevvw6amq3j0vt", marks=_xfail_pr_209, id="valid-mixed"),
+    pytest.param(_VALID_ULID_STR_LOWER, id="valid-lower"),
+    pytest.param("01GTCKZT7K26yevvw6amq3j0vt", id="valid-mixed"),
 ]
 
 
