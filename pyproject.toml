@@ -1,6 +1,6 @@
 [project]
 name = "ulid-transform"
-version = "2.2.1"
+version = "2.2.2"
 license = "MIT"
 description = "Create and transform ULIDs"
 readme = "README.md"
@@ -101,7 +101,7 @@ known-first-party = ["ulid_transform", "tests"]
 
 [tool.ruff.lint.per-file-ignores]
 "bench/*" = ["S101"]
-"tests/*" = ["S101"]
+"tests/*" = ["S101", "S311"]
 
 [build-system]
 requires = ['setuptools>=77.0', "poetry-core>=2.1.0"]
