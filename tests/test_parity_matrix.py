@@ -12,9 +12,14 @@ form the cross-impl contract net referenced in issue #210.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 import ulid_transform._py_ulid_impl as py_impl
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 try:
     import ulid_transform._ulid_impl as c_impl
@@ -59,7 +64,7 @@ _xfail_issue_210_exc_type = pytest.mark.xfail(
 )
 
 
-def _run(fn, *args):
+def _run(fn: Callable[..., object], *args: object) -> tuple[str, object]:
     try:
         return ("ok", fn(*args))
     except Exception as exc:  # noqa: BLE001
