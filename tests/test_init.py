@@ -148,19 +148,19 @@ def test_entropy(impl):
 
 def test_ulid_to_timestamp_wrong_length_bytes(impl: ModuleType) -> None:
     """Bytes input with the wrong length must raise ValueError, not silently truncate."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="16 bytes"):
         impl.ulid_to_timestamp(b"short")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="16 bytes"):
         impl.ulid_to_timestamp(b"")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="16 bytes"):
         impl.ulid_to_timestamp(b"a" * 50)
 
 
 def test_ulid_to_timestamp_wrong_length_string(impl: ModuleType) -> None:
     """String input with the wrong length must raise ValueError."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="26 character"):
         impl.ulid_to_timestamp("too short")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="26 character"):
         impl.ulid_to_timestamp("01GTCKZT7K26YEVVW6AMQ3J0VT0000")
 
 
