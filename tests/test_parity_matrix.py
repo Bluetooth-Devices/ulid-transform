@@ -236,16 +236,20 @@ def test_ulid_at_time_valid_shape(timestamp):
     """Valid timestamps: both impls return a 26-char str (content is random)."""
     py_val = py_impl.ulid_at_time(timestamp)
     c_val = c_impl.ulid_at_time(timestamp)
-    assert isinstance(py_val, str) and len(py_val) == 26
-    assert isinstance(c_val, str) and len(c_val) == 26
+    assert isinstance(py_val, str)
+    assert len(py_val) == 26
+    assert isinstance(c_val, str)
+    assert len(c_val) == 26
 
 
 @pytest.mark.parametrize("timestamp", _AT_TIME_VALID)
 def test_ulid_at_time_bytes_valid_shape(timestamp):
     py_val = py_impl.ulid_at_time_bytes(timestamp)
     c_val = c_impl.ulid_at_time_bytes(timestamp)
-    assert isinstance(py_val, bytes) and len(py_val) == 16
-    assert isinstance(c_val, bytes) and len(c_val) == 16
+    assert isinstance(py_val, bytes)
+    assert len(py_val) == 16
+    assert isinstance(c_val, bytes)
+    assert len(c_val) == 16
 
 
 @pytest.mark.parametrize("timestamp", _AT_TIME_INVALID)
@@ -256,8 +260,11 @@ def test_ulid_at_time_invalid_parity(timestamp):
     # Both must have errored — if either returned successfully, the case
     # doesn't belong in the invalid grid. Filtered separately so the failure
     # message is clearer than `_assert_parity` would give.
-    assert py_outcome[0] == "exc" and c_outcome[0] == "exc", (
-        f"expected both impls to raise; got py={py_outcome!r} c={c_outcome!r}"
+    assert py_outcome[0] == "exc", (
+        f"expected py impl to raise; got py={py_outcome!r} c={c_outcome!r}"
+    )
+    assert c_outcome[0] == "exc", (
+        f"expected c impl to raise; got py={py_outcome!r} c={c_outcome!r}"
     )
     assert py_outcome == c_outcome, (
         f"exception type mismatch: py={py_outcome!r} c={c_outcome!r}"
@@ -268,8 +275,11 @@ def test_ulid_at_time_invalid_parity(timestamp):
 def test_ulid_at_time_bytes_invalid_parity(timestamp):
     py_outcome = _run(py_impl.ulid_at_time_bytes, timestamp)
     c_outcome = _run(c_impl.ulid_at_time_bytes, timestamp)
-    assert py_outcome[0] == "exc" and c_outcome[0] == "exc", (
-        f"expected both impls to raise; got py={py_outcome!r} c={c_outcome!r}"
+    assert py_outcome[0] == "exc", (
+        f"expected py impl to raise; got py={py_outcome!r} c={c_outcome!r}"
+    )
+    assert c_outcome[0] == "exc", (
+        f"expected c impl to raise; got py={py_outcome!r} c={c_outcome!r}"
     )
     assert py_outcome == c_outcome, (
         f"exception type mismatch: py={py_outcome!r} c={c_outcome!r}"
@@ -284,22 +294,28 @@ def test_ulid_at_time_bytes_invalid_parity(timestamp):
 def test_ulid_now_shape():
     py_val = py_impl.ulid_now()
     c_val = c_impl.ulid_now()
-    assert isinstance(py_val, str) and len(py_val) == 26
-    assert isinstance(c_val, str) and len(c_val) == 26
+    assert isinstance(py_val, str)
+    assert len(py_val) == 26
+    assert isinstance(c_val, str)
+    assert len(c_val) == 26
 
 
 def test_ulid_now_bytes_shape():
     py_val = py_impl.ulid_now_bytes()
     c_val = c_impl.ulid_now_bytes()
-    assert isinstance(py_val, bytes) and len(py_val) == 16
-    assert isinstance(c_val, bytes) and len(c_val) == 16
+    assert isinstance(py_val, bytes)
+    assert len(py_val) == 16
+    assert isinstance(c_val, bytes)
+    assert len(c_val) == 16
 
 
 def test_ulid_hex_shape():
     py_val = py_impl.ulid_hex()
     c_val = c_impl.ulid_hex()
-    assert isinstance(py_val, str) and len(py_val) == 32
-    assert isinstance(c_val, str) and len(c_val) == 32
+    assert isinstance(py_val, str)
+    assert len(py_val) == 32
+    assert isinstance(c_val, str)
+    assert len(c_val) == 32
     # Must parse as hex
     int(py_val, 16)
     int(c_val, 16)
