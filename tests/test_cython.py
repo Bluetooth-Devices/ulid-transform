@@ -15,6 +15,6 @@ def test_require_c_extension():
     """Fail if REQUIRE_EXTENSION is set and the C extension module is not available."""
     if not _require_extension():
         pytest.skip("REQUIRE_EXTENSION is not truthy")
-    import ulid_transform._ulid_impl as c_impl
+    import ulid_transform._ulid_impl as c_impl  # noqa: PLC0415
 
     assert repr(c_impl.ulid_now).startswith("<built-in function")

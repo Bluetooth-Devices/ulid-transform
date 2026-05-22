@@ -8,17 +8,16 @@ log = logging.getLogger(__name__)
 
 
 def _get_available_implementations():
-    import ulid_transform._py_ulid_impl as ulid_transform_py
+    import ulid_transform._py_ulid_impl as ulid_transform_py  # noqa: PLC0415
 
     yield ("python", ulid_transform_py)
 
     try:
-        import ulid_transform._ulid_impl as ulid_transform_c
+        import ulid_transform._ulid_impl as ulid_transform_c  # noqa: PLC0415
 
         yield ("c", ulid_transform_c)
     except ImportError:
         log.warning("Failed to import C extension", exc_info=True)
-        pass
 
 
 _impls = dict(_get_available_implementations())

@@ -88,20 +88,85 @@ warn_unused_ignores = false
 module = "bench.*"
 allow_untyped_defs = true
 
+[tool.ruff]
+required-version = ">=0.5.0"
+target-version = "py311"
+
 [tool.ruff.lint]
-extend-select = [
-    "B",
-    "I",
-    "S",
-    "UP",
+select = [
+    "A",     # flake8-builtins
+    "ARG",   # flake8-unused-arguments
+    "ASYNC", # async rules
+    "B",     # flake8-bugbear
+    "BLE",   # flake8-blind-except
+    "C4",    # flake8-comprehensions
+    "C90",   # mccabe complexity
+    "DTZ",   # flake8-datetimez
+    "E",     # pycodestyle
+    "EM",    # flake8-errmsg
+    "ERA",   # eradicate (commented-out code)
+    "EXE",   # flake8-executable
+    "F",     # pyflakes/autoflake
+    "FA",    # flake8-future-annotations
+    "FIX",   # flake8-fixme
+    "FLY",   # flynt
+    "FURB",  # refurb
+    "G",     # flake8-logging-format
+    "I",     # isort
+    "ICN",   # flake8-import-conventions
+    "INP",   # flake8-no-pep420 (implicit namespace packages)
+    "ISC",   # flake8-implicit-str-concat
+    "LOG",   # flake8-logging
+    "N",     # pep8-naming
+    "NPY",   # numpy-specific rules
+    "PERF",  # Perflint
+    "PGH",   # pygrep-hooks
+    "PIE",   # flake8-pie
+    "PL",    # pylint
+    "PT",    # flake8-pytest-style
+    "PTH",   # flake8-use-pathlib
+    "PYI",   # flake8-pyi
+    "Q",     # flake8-quotes
+    "UP",    # pyupgrade
+    "RET",   # flake8-return
+    "RSE",   # flake8-raise
+    "RUF",   # ruff
+    "S",     # flake8-bandit
+    "SIM",   # flake8-SIM
+    "SLF",   # flake8-self
+    "SLOT",  # flake8-slots
+    "T10",   # flake8-debugger
+    "T20",   # flake8-print
+    "TC",    # flake8-type-checking
+    "TD",    # flake8-todos
+    "TID",   # Tidy imports
+    "TRY",   # try rules
+    "W",     # pycodestyle warnings
+    "YTT",   # flake8-2020
+]
+
+ignore = [
+    "ASYNC109", # `timeout` parameters are part of the public async API
+    "E501",     # line too long
+    "PLR0911",  # Too many return statements
+    "PLR0912",  # Too many branches
+    "PLR0913",  # Too many arguments to function call
+    "PLR0915",  # Too many statements
+    "PLR2004",  # Magic value used in comparison
+    "PLW2901",  # Outer variable overwritten by inner target
+    "TRY003",   # Avoid specifying long messages outside the exception class
+    "TID252",   # Prefer absolute imports over relative imports from parent modules
 ]
 
 [tool.ruff.lint.isort]
+force-sort-within-sections = true
 known-first-party = ["ulid_transform", "tests"]
+combine-as-imports = true
+split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
-"bench/*" = ["S101"]
-"tests/*" = ["S101", "S311"]
+"bench/*" = ["S101", "SLF", "T20"]
+"tests/*" = ["ARG", "S101", "S106", "S311", "SLF"]
 
 [build-system]
 requires = ['setuptools>=77.0', "poetry-core>=2.1.0"]

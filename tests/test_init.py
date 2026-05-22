@@ -31,12 +31,12 @@ def test_ulid_to_bytes(impl):
 
 
 def test_ulid_to_bytes_overflow(impl):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="26 character"):
         impl.ulid_to_bytes("01GTCKZT7K26YEVVW6AMQ3J0VT0000")
 
 
 def test_ulid_to_bytes_under_low(impl):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="26 character"):
         impl.ulid_to_bytes("01")
 
 
@@ -48,7 +48,7 @@ def test_bytes_to_ulid(impl):
 
 
 def test_ulid_to_bytes_invalid_length(impl):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="26 character"):
         assert impl.ulid_to_bytes("aa")
 
 
