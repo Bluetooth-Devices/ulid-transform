@@ -362,6 +362,8 @@ def _encode(ulid_bytes: bytes) -> str:
 
 def ulid_to_bytes(value: str) -> bytes:
     """Decode a ulid to bytes."""
+    if not isinstance(value, str):
+        raise TypeError(f"ULID must be a string, not {type(value).__name__}")
     if len(value) != 26:
         raise ValueError(f"ULID must be a 26 character string: {value}")
     encoded = value.encode("ascii")
@@ -420,6 +422,8 @@ def ulid_to_bytes(value: str) -> bytes:
 
 def bytes_to_ulid(value: bytes) -> str:
     """Encode bytes to a ulid."""
+    if not isinstance(value, bytes):
+        raise TypeError(f"ULID bytes must be bytes, not {type(value).__name__}")
     if len(value) != 16:
         raise ValueError(f"ULID bytes must be 16 bytes: {value!r}")
     return _encode(value)
@@ -427,22 +431,19 @@ def bytes_to_ulid(value: bytes) -> str:
 
 def ulid_to_bytes_or_none(ulid: str | None) -> bytes | None:
     """Convert an ulid to bytes."""
-    if ulid is None:
+    if not isinstance(ulid, str) or len(ulid) != 26:
         return None
     try:
         return ulid_to_bytes(ulid)
-    except ValueError:
+    except (ValueError, UnicodeEncodeError):
         return None
 
 
 def bytes_to_ulid_or_none(ulid_bytes: bytes | None) -> str | None:
     """Convert bytes to a ulid."""
-    if ulid_bytes is None:
+    if not isinstance(ulid_bytes, bytes) or len(ulid_bytes) != 16:
         return None
-    try:
-        return bytes_to_ulid(ulid_bytes)
-    except ValueError:
-        return None
+    return bytes_to_ulid(ulid_bytes)
 
 
 def ulid_to_timestamp(ulid: str | bytes) -> int:
@@ -450,8 +451,12 @@ def ulid_to_timestamp(ulid: str | bytes) -> int:
     Get the timestamp from a ULID.
     The returned value is in milliseconds since the UNIX epoch.
     """
-    if not isinstance(ulid, bytes):
+    if isinstance(ulid, bytes):
+        if len(ulid) != 16:
+            raise ValueError(f"ULID bytes must be 16 bytes: {ulid!r}")
+        ulid_bytes = ulid
+    elif isinstance(ulid, str):
         ulid_bytes = ulid_to_bytes(ulid)
     else:
-        ulid_bytes = ulid
+        raise TypeError(f"ULID must be a string or bytes, not {type(ulid).__name__}")
     return int.from_bytes(b"\x00\x00" + ulid_bytes[:6], "big")

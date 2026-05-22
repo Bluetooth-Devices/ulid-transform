@@ -1,4 +1,4 @@
-__version__ = "2.2.1"
+__version__ = "2.2.4"
 
 try:
     from ._ulid_impl import (

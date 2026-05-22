@@ -1,4 +1,5 @@
 import time
+from types import ModuleType
 
 import pytest
 
@@ -106,6 +107,28 @@ def test_ulid_to_bytes_or_none(impl):
     assert impl.ulid_to_bytes_or_none(None) is None
 
 
+@pytest.mark.parametrize(
+    "value",
+    [
+        123,
+        3.14,
+        [],
+        (),
+        {},
+        b"\x01w\xaf\xf9w\xe5\xf8~\x1f\x87\xe1\xf8~\x1f\x87\xe1",  # bytes, not str
+        object(),
+    ],
+)
+def test_ulid_to_bytes_or_none_invalid_type(impl, value):
+    """Non-str inputs return None instead of raising (parity with C impl)."""
+    assert impl.ulid_to_bytes_or_none(value) is None
+
+
+def test_ulid_to_bytes_or_none_non_ascii(impl):
+    """Non-ASCII 26-char strings return None instead of raising."""
+    assert impl.ulid_to_bytes_or_none("é" * 26) is None
+
+
 def test_entropy(impl):
     """Verify generated ULIDs have non-trivial entropy in the random part."""
     samples = [impl.ulid_at_time_bytes(1677627631.0)[6:] for _ in range(200)]
@@ -123,6 +146,69 @@ def test_entropy(impl):
         assert len(distinct_nibbles) > 1, f"Nibble position {pos} has no variety"
 
 
+def test_ulid_to_timestamp_wrong_length_bytes(impl: ModuleType) -> None:
+    """Bytes input with the wrong length must raise ValueError, not silently truncate."""
+    with pytest.raises(ValueError):
+        impl.ulid_to_timestamp(b"short")
+    with pytest.raises(ValueError):
+        impl.ulid_to_timestamp(b"")
+    with pytest.raises(ValueError):
+        impl.ulid_to_timestamp(b"a" * 50)
+
+
+def test_ulid_to_timestamp_wrong_length_string(impl: ModuleType) -> None:
+    """String input with the wrong length must raise ValueError."""
+    with pytest.raises(ValueError):
+        impl.ulid_to_timestamp("too short")
+    with pytest.raises(ValueError):
+        impl.ulid_to_timestamp("01GTCKZT7K26YEVVW6AMQ3J0VT0000")
+
+
+def test_ulid_to_timestamp_wrong_type(impl: ModuleType) -> None:
+    """Non-str / non-bytes input must raise TypeError."""
+    with pytest.raises(TypeError):
+        impl.ulid_to_timestamp(123)
+    with pytest.raises(TypeError):
+        impl.ulid_to_timestamp(None)
+    with pytest.raises(TypeError):
+        impl.ulid_to_timestamp(
+            bytearray(b"\x01\x86\x99?\xe8\xf3\x11\xbc\xed\xef\x86U.9\x03z")
+        )
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        b"01GTCKZT7K26YEVVW6AMQ3J0VT",
+        bytearray(b"01GTCKZT7K26YEVVW6AMQ3J0VT"),
+        memoryview(b"01GTCKZT7K26YEVVW6AMQ3J0VT"),
+        123,
+        None,
+        3.14,
+    ],
+)
+def test_ulid_to_bytes_wrong_type(impl, value):
+    """Non-str input must raise TypeError (parity with C impl)."""
+    with pytest.raises(TypeError):
+        impl.ulid_to_bytes(value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        bytearray(16),
+        memoryview(b"x" * 16),
+        "01GTCKZT7K26YEVVW6AMQ3J0VT",
+        123,
+        None,
+    ],
+)
+def test_bytes_to_ulid_wrong_type(impl, value):
+    """Non-bytes input must raise TypeError (parity with C impl)."""
+    with pytest.raises(TypeError):
+        impl.bytes_to_ulid(value)
+
+
 def test_bytes_to_ulid_or_none(impl):
     """Test bytes_to_ulid_or_none."""
     assert (
@@ -133,3 +219,20 @@ def test_bytes_to_ulid_or_none(impl):
     )
     assert impl.bytes_to_ulid_or_none(b"invalid") is None
     assert impl.bytes_to_ulid_or_none(None) is None
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        123,
+        3.14,
+        [],
+        (),
+        {},
+        "01EYQZJXZ5Z1Z1Z1Z1Z1Z1Z1Z1",  # str, not bytes
+        object(),
+    ],
+)
+def test_bytes_to_ulid_or_none_invalid_type(impl, value):
+    """Non-bytes inputs return None instead of raising (parity with C impl)."""
+    assert impl.bytes_to_ulid_or_none(value) is None

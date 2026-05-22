@@ -1,6 +1,6 @@
 [project]
 name = "ulid-transform"
-version = "2.2.1"
+version = "2.2.4"
 license = "MIT"
 description = "Create and transform ULIDs"
 readme = "README.md"
@@ -39,7 +39,7 @@ python = "^3.11"
 pytest = ">=9.0.3,<10"
 pytest-cov = ">=3,<8"
 setuptools = ">=65.4.1,<83.0.0"
-pytest-codspeed = ">=4.4.0,<5.0.0"
+pytest-codspeed = ">=5.0.2,<6.0.0"
 
 
 [tool.poetry.group.benchmark.dependencies]
@@ -105,7 +105,7 @@ known-first-party = ["ulid_transform", "tests"]
 
 [tool.ruff.lint.per-file-ignores]
 "bench/*" = ["S101"]
-"tests/*" = ["S101"]
+"tests/*" = ["S101", "S311"]
 
 [build-system]
 requires = ['setuptools>=77.0', "poetry-core>=2.1.0"]
