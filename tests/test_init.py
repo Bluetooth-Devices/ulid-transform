@@ -1,4 +1,5 @@
 import time
+from types import ModuleType
 
 import pytest
 
@@ -123,7 +124,7 @@ def test_entropy(impl):
         assert len(distinct_nibbles) > 1, f"Nibble position {pos} has no variety"
 
 
-def test_ulid_to_timestamp_wrong_length_bytes(impl):
+def test_ulid_to_timestamp_wrong_length_bytes(impl: ModuleType) -> None:
     """Bytes input with the wrong length must raise ValueError, not silently truncate."""
     with pytest.raises(ValueError):
         impl.ulid_to_timestamp(b"short")
@@ -133,7 +134,7 @@ def test_ulid_to_timestamp_wrong_length_bytes(impl):
         impl.ulid_to_timestamp(b"a" * 50)
 
 
-def test_ulid_to_timestamp_wrong_length_string(impl):
+def test_ulid_to_timestamp_wrong_length_string(impl: ModuleType) -> None:
     """String input with the wrong length must raise ValueError."""
     with pytest.raises(ValueError):
         impl.ulid_to_timestamp("too short")
@@ -141,7 +142,7 @@ def test_ulid_to_timestamp_wrong_length_string(impl):
         impl.ulid_to_timestamp("01GTCKZT7K26YEVVW6AMQ3J0VT0000")
 
 
-def test_ulid_to_timestamp_wrong_type(impl):
+def test_ulid_to_timestamp_wrong_type(impl: ModuleType) -> None:
     """Non-str / non-bytes input must raise TypeError."""
     with pytest.raises(TypeError):
         impl.ulid_to_timestamp(123)
