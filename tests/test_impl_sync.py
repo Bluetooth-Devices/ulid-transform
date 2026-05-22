@@ -1,6 +1,6 @@
+from inspect import getdoc, signature
 import os
 import random
-from inspect import getdoc, signature
 
 import pytest
 

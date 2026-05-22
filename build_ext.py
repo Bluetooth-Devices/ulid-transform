@@ -1,8 +1,8 @@
 """Build optional C extension modules."""
 
+from distutils.command.build_ext import build_ext
 import logging
 import os
-from distutils.command.build_ext import build_ext
 from os.path import join
 from typing import Any
 
