@@ -66,7 +66,7 @@ def _run(fn, *args):
         return ("exc", type(exc).__name__)
 
 
-def _assert_parity(fn_name: str, *args) -> None:
+def _assert_parity(fn_name: str, *args: object) -> None:
     py_fn = getattr(py_impl, fn_name)
     c_fn = getattr(c_impl, fn_name)
     py_outcome = _run(py_fn, *args)
