@@ -450,8 +450,12 @@ def ulid_to_timestamp(ulid: str | bytes) -> int:
     Get the timestamp from a ULID.
     The returned value is in milliseconds since the UNIX epoch.
     """
-    if not isinstance(ulid, bytes):
+    if isinstance(ulid, bytes):
+        if len(ulid) != 16:
+            raise ValueError(f"ULID bytes must be 16 bytes: {ulid!r}")
+        ulid_bytes = ulid
+    elif isinstance(ulid, str):
         ulid_bytes = ulid_to_bytes(ulid)
     else:
-        ulid_bytes = ulid
+        raise TypeError(f"ULID must be a string or bytes, not {type(ulid).__name__}")
     return int.from_bytes(b"\x00\x00" + ulid_bytes[:6], "big")
