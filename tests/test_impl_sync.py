@@ -85,7 +85,7 @@ def test_parity_ulid_to_bytes_mixed_case():
 
 @pytestmark_parity
 @pytest.mark.parametrize(
-    "alias_char,canonical",
+    ("alias_char", "canonical"),
     [
         ("I", "1"),
         ("i", "1"),

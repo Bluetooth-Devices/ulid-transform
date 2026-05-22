@@ -1,0 +1,8 @@
+version = 1
+revision = 3
+requires-python = ">=3.11"
+
+[[package]]
+name = "ulid-transform"
+version = "2.2.4"
+source = { editable = "." }

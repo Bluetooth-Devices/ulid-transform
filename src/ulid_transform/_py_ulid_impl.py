@@ -363,7 +363,8 @@ def _encode(ulid_bytes: bytes) -> str:
 def ulid_to_bytes(value: str) -> bytes:
     """Decode a ulid to bytes."""
     if not isinstance(value, str):
-        raise TypeError(f"ULID must be a string, not {type(value).__name__}")
+        msg = f"ULID must be a string, not {type(value).__name__}"
+        raise TypeError(msg)
     if len(value) != 26:
         msg = f"ULID must be a 26 character string: {value}"
         raise ValueError(msg)
@@ -424,7 +425,8 @@ def ulid_to_bytes(value: str) -> bytes:
 def bytes_to_ulid(value: bytes) -> str:
     """Encode bytes to a ulid."""
     if not isinstance(value, bytes):
-        raise TypeError(f"ULID bytes must be bytes, not {type(value).__name__}")
+        msg = f"ULID bytes must be bytes, not {type(value).__name__}"
+        raise TypeError(msg)
     if len(value) != 16:
         msg = f"ULID bytes must be 16 bytes: {value!r}"
         raise ValueError(msg)

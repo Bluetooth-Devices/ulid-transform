@@ -3,13 +3,15 @@
 from distutils.command.build_ext import build_ext
 import logging
 import os
-from os.path import join
+from pathlib import Path
 from typing import Any
 
 try:
     from setuptools import Extension
 except ImportError:
     from distutils.core import Extension
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def getenv_bool(key: str, default: bool = False) -> bool:
@@ -18,13 +20,14 @@ def getenv_bool(key: str, default: bool = False) -> bool:
         return True
     if value in ("0", "false", "no"):
         return False
-    raise ValueError(f"Invalid value for boolean envvar {key}: {value}")
+    msg = f"Invalid value for boolean envvar {key}: {value}"
+    raise ValueError(msg)
 
 
 ulid_module = Extension(
     "ulid_transform._ulid_impl",
     [
-        join("src", "ulid_transform", "_ulid_impl.cpp"),
+        str(Path("src") / "ulid_transform" / "_ulid_impl.cpp"),
     ],
     language="c++",
     extra_compile_args=["-std=c++11", "-O3", "-g0"],
@@ -39,7 +42,7 @@ class BuildExt(build_ext):
         try:
             super().build_extensions()
         except Exception:  # nosec
-            logging.exception("Failed to build extensions")
+            _LOGGER.exception("Failed to build extensions")
             if getenv_bool("REQUIRE_CYTHON") or getenv_bool("REQUIRE_EXTENSION"):
                 raise
 
@@ -55,6 +58,6 @@ def build(setup_kwargs: Any) -> None:
             }
         )
     except Exception:
-        logging.exception("Failed to configure C extension")
+        _LOGGER.exception("Failed to configure C extension")
         if getenv_bool("REQUIRE_CYTHON") or getenv_bool("REQUIRE_EXTENSION"):
             raise
