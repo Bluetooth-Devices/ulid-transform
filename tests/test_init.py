@@ -154,6 +154,39 @@ def test_ulid_to_timestamp_wrong_type(impl: ModuleType) -> None:
         )
 
 
+@pytest.mark.parametrize(
+    "value",
+    [
+        b"01GTCKZT7K26YEVVW6AMQ3J0VT",
+        bytearray(b"01GTCKZT7K26YEVVW6AMQ3J0VT"),
+        memoryview(b"01GTCKZT7K26YEVVW6AMQ3J0VT"),
+        123,
+        None,
+        3.14,
+    ],
+)
+def test_ulid_to_bytes_wrong_type(impl, value):
+    """Non-str input must raise TypeError (parity with C impl)."""
+    with pytest.raises(TypeError):
+        impl.ulid_to_bytes(value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        bytearray(16),
+        memoryview(b"x" * 16),
+        "01GTCKZT7K26YEVVW6AMQ3J0VT",
+        123,
+        None,
+    ],
+)
+def test_bytes_to_ulid_wrong_type(impl, value):
+    """Non-bytes input must raise TypeError (parity with C impl)."""
+    with pytest.raises(TypeError):
+        impl.bytes_to_ulid(value)
+
+
 def test_bytes_to_ulid_or_none(impl):
     """Test bytes_to_ulid_or_none."""
     assert (
