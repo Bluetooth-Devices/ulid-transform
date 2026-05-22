@@ -29,7 +29,7 @@ pytestmark = pytest.mark.skipif(
 
 _VALID_ULID_STR = "01GTCKZT7K26YEVVW6AMQ3J0VT"
 _VALID_ULID_BYTES = b"\x01\x86\x99\x3f\xe8\xf3\x11\xbd\xfb\xd6\x70\x55\x6c\x18\xc0\x6b"
-_VALID_ULID_BYTES_LOWER = "01gtckzt7k26yevvw6amq3j0vt"
+_VALID_ULID_STR_LOWER = "01gtckzt7k26yevvw6amq3j0vt"
 
 
 # Markers for tracked divergences. ``strict=False`` so an unexpected pass
@@ -62,7 +62,7 @@ _xfail_issue_210_exc_type = pytest.mark.xfail(
 def _run(fn, *args):
     try:
         return ("ok", fn(*args))
-    except BaseException as exc:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001
         return ("exc", type(exc).__name__)
 
 
@@ -111,7 +111,7 @@ def test_bytes_to_ulid_parity(value):
 
 _ULID_TO_BYTES_CASES = [
     pytest.param(_VALID_ULID_STR, id="valid-upper"),
-    pytest.param(_VALID_ULID_BYTES_LOWER, marks=_xfail_pr_209, id="valid-lower"),
+    pytest.param(_VALID_ULID_STR_LOWER, marks=_xfail_pr_209, id="valid-lower"),
     pytest.param("", id="empty-str"),
     pytest.param("short", id="short-str"),
     pytest.param("X" * 27, id="too-long-str"),
@@ -164,7 +164,7 @@ def test_ulid_to_timestamp_parity(value):
 _ULID_TO_BYTES_OR_NONE_CASES = [
     pytest.param(None, id="none"),
     pytest.param(_VALID_ULID_STR, id="valid-str"),
-    pytest.param(_VALID_ULID_BYTES_LOWER, marks=_xfail_pr_209, id="valid-lower"),
+    pytest.param(_VALID_ULID_STR_LOWER, marks=_xfail_pr_209, id="valid-lower"),
     pytest.param("", id="empty"),
     pytest.param("short", id="short"),
     pytest.param("é" * 26, id="non-ascii-26"),
@@ -277,15 +277,17 @@ def test_ulid_at_time_bytes_invalid_parity(timestamp):
 
 
 def test_ulid_now_shape():
-    assert isinstance(py_impl.ulid_now(), str) and len(py_impl.ulid_now()) == 26
-    assert isinstance(c_impl.ulid_now(), str) and len(c_impl.ulid_now()) == 26
+    py_val = py_impl.ulid_now()
+    c_val = c_impl.ulid_now()
+    assert isinstance(py_val, str) and len(py_val) == 26
+    assert isinstance(c_val, str) and len(c_val) == 26
 
 
 def test_ulid_now_bytes_shape():
-    assert isinstance(py_impl.ulid_now_bytes(), bytes)
-    assert len(py_impl.ulid_now_bytes()) == 16
-    assert isinstance(c_impl.ulid_now_bytes(), bytes)
-    assert len(c_impl.ulid_now_bytes()) == 16
+    py_val = py_impl.ulid_now_bytes()
+    c_val = c_impl.ulid_now_bytes()
+    assert isinstance(py_val, bytes) and len(py_val) == 16
+    assert isinstance(c_val, bytes) and len(c_val) == 16
 
 
 def test_ulid_hex_shape():
@@ -310,7 +312,7 @@ _ROUND_TRIP_DECODE_SAMPLES = [
     pytest.param("00000000000000000000000000", id="all-zero"),
     pytest.param("7ZZZZZZZZZZZZZZZZZZZZZZZZZ", id="all-z-upper"),
     pytest.param(_VALID_ULID_STR, id="valid-upper"),
-    pytest.param(_VALID_ULID_BYTES_LOWER, marks=_xfail_pr_209, id="valid-lower"),
+    pytest.param(_VALID_ULID_STR_LOWER, marks=_xfail_pr_209, id="valid-lower"),
     pytest.param("01GTCKZT7K26yevvw6amq3j0vt", marks=_xfail_pr_209, id="valid-mixed"),
 ]
 
