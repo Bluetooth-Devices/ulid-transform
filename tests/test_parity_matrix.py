@@ -93,9 +93,7 @@ _ULID_TO_BYTES_CASES = [
     pytest.param(None, id="none"),
     pytest.param([0] * 26, id="list"),
     pytest.param(_VALID_ULID_BYTES, id="ulid-as-bytes"),
-    pytest.param(
-        bytearray(_VALID_ULID_STR.encode()), id="ulid-as-bytearray"
-    ),
+    pytest.param(bytearray(_VALID_ULID_STR.encode()), id="ulid-as-bytearray"),
 ]
 
 
