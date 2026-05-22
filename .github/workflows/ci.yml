@@ -214,6 +214,11 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.ref_name }}
 
+      # PSR errors on detached HEAD; give it a named branch for PR dry runs
+      - name: Create local branch for PSR dry run
+        if: github.event_name == 'pull_request'
+        run: git switch -c "pr-${{ github.event.pull_request.number }}"
+
       # Do a dry run of PSR
       - name: Test release
         uses: python-semantic-release/python-semantic-release@v10.5.3
