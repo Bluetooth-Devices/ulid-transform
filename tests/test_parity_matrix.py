@@ -37,23 +37,6 @@ _VALID_ULID_BYTES = b"\x01\x86\x99\x3f\xe8\xf3\x11\xbd\xfb\xd6\x70\x55\x6c\x18\x
 _VALID_ULID_STR_LOWER = "01gtckzt7k26yevvw6amq3j0vt"
 
 
-# Markers for tracked divergences. ``strict=False`` so an unexpected pass
-# becomes a visible XPASS (not a failure) — that's the signal to remove the
-# marker once the upstream PR lands.
-_xfail_issue_210_strict_input = pytest.mark.xfail(
-    reason="issue #210: Py accepts bytearray/memoryview/bytes where C requires strict type",
-    strict=False,
-)
-_xfail_issue_210_overflow = pytest.mark.xfail(
-    reason="issue #210: ulid_at_time overflow semantics undefined; Py raises, C wraps",
-    strict=False,
-)
-_xfail_issue_210_exc_type = pytest.mark.xfail(
-    reason="issue #210: exception-type mismatch (AttributeError vs TypeError, etc.)",
-    strict=False,
-)
-
-
 def _run(fn: Callable[..., object], *args: object) -> tuple[str, object]:
     try:
         return ("ok", fn(*args))
@@ -85,13 +68,9 @@ _BYTES_TO_ULID_CASES = [
     pytest.param(123, id="int"),
     pytest.param(None, id="none"),
     pytest.param("a" * 16, id="str-16"),
-    pytest.param([0] * 16, marks=_xfail_issue_210_strict_input, id="list"),
-    pytest.param(bytearray(16), marks=_xfail_issue_210_strict_input, id="bytearray-16"),
-    pytest.param(
-        memoryview(b"\x00" * 16),
-        marks=_xfail_issue_210_strict_input,
-        id="memoryview-16",
-    ),
+    pytest.param([0] * 16, id="list"),
+    pytest.param(bytearray(16), id="bytearray-16"),
+    pytest.param(memoryview(b"\x00" * 16), id="memoryview-16"),
 ]
 
 
@@ -112,14 +91,10 @@ _ULID_TO_BYTES_CASES = [
     pytest.param("X" * 27, id="too-long-str"),
     pytest.param(123, id="int"),
     pytest.param(None, id="none"),
-    pytest.param([0] * 26, marks=_xfail_issue_210_exc_type, id="list"),
+    pytest.param([0] * 26, id="list"),
+    pytest.param(_VALID_ULID_BYTES, id="ulid-as-bytes"),
     pytest.param(
-        _VALID_ULID_BYTES, marks=_xfail_issue_210_exc_type, id="ulid-as-bytes"
-    ),
-    pytest.param(
-        bytearray(_VALID_ULID_STR.encode()),
-        marks=_xfail_issue_210_exc_type,
-        id="ulid-as-bytearray",
+        bytearray(_VALID_ULID_STR.encode()), id="ulid-as-bytearray"
     ),
 ]
 
@@ -209,15 +184,12 @@ _AT_TIME_INVALID = [
     pytest.param(None, id="none"),
     pytest.param([0], id="list"),
     pytest.param({}, id="dict"),
-    pytest.param("not-a-float", marks=_xfail_issue_210_exc_type, id="str"),
-    pytest.param(-1.0, marks=_xfail_issue_210_overflow, id="negative"),
-    pytest.param(1e18, marks=_xfail_issue_210_overflow, id="huge"),
-    # NaN / inf: Py raises on float->int conversion, C casts the NaN/inf
-    # double to int64_t which is undefined behavior in C++ (typically yields
-    # 0 or INT64_MIN), then silently produces a "ULID" with that timestamp.
-    pytest.param(float("nan"), marks=_xfail_issue_210_overflow, id="nan"),
-    pytest.param(float("inf"), marks=_xfail_issue_210_overflow, id="inf"),
-    pytest.param(float("-inf"), marks=_xfail_issue_210_overflow, id="neg-inf"),
+    pytest.param("not-a-float", id="str"),
+    pytest.param(-1.0, id="negative"),
+    pytest.param(1e18, id="huge"),
+    pytest.param(float("nan"), id="nan"),
+    pytest.param(float("inf"), id="inf"),
+    pytest.param(float("-inf"), id="neg-inf"),
 ]
 
 
