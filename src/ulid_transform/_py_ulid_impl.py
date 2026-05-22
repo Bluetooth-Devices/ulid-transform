@@ -431,22 +431,19 @@ def bytes_to_ulid(value: bytes) -> str:
 
 def ulid_to_bytes_or_none(ulid: str | None) -> bytes | None:
     """Convert an ulid to bytes."""
-    if ulid is None:
+    if not isinstance(ulid, str) or len(ulid) != 26:
         return None
     try:
         return ulid_to_bytes(ulid)
-    except ValueError:
+    except (ValueError, UnicodeEncodeError):
         return None
 
 
 def bytes_to_ulid_or_none(ulid_bytes: bytes | None) -> str | None:
     """Convert bytes to a ulid."""
-    if ulid_bytes is None:
+    if not isinstance(ulid_bytes, bytes) or len(ulid_bytes) != 16:
         return None
-    try:
-        return bytes_to_ulid(ulid_bytes)
-    except ValueError:
-        return None
+    return bytes_to_ulid(ulid_bytes)
 
 
 def ulid_to_timestamp(ulid: str | bytes) -> int:
