@@ -1,6 +1,6 @@
 import pytest
 
-import tests.conftest  # noqa
+import tests.conftest  # noqa: F401
 
 example = "01J3MS6XG9XC7X9FR15J9A82ZP"
 

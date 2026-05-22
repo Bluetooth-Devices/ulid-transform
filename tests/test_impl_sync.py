@@ -1,6 +1,6 @@
+from inspect import getdoc, signature
 import os
 import random
-from inspect import getdoc, signature
 
 import pytest
 
@@ -37,7 +37,7 @@ def test_impl_exports_required_keys(impl):
 
 def test_impls_in_sync(impl):
     """Test implementations are in sync with the python implementation (docstrings and signatures)."""
-    import ulid_transform._py_ulid_impl as python_impl
+    import ulid_transform._py_ulid_impl as python_impl  # noqa: PLC0415
 
     for key in ulid_transform.__all__:
         py_func = getattr(python_impl, key)
@@ -85,7 +85,7 @@ def test_parity_ulid_to_bytes_mixed_case():
 
 @pytestmark_parity
 @pytest.mark.parametrize(
-    "alias_char,canonical",
+    ("alias_char", "canonical"),
     [
         ("I", "1"),
         ("i", "1"),

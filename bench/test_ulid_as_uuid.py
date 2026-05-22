@@ -2,7 +2,7 @@ from uuid import UUID
 
 import pytest
 
-import tests.conftest  # noqa
+import tests.conftest  # noqa: F401
 
 
 @pytest.mark.benchmark(group="ulid_as_uuid")
@@ -21,7 +21,7 @@ def test_ut_ulid_hex(benchmark, impl):
 @pytest.mark.benchmark(group="ulid_as_uuid")
 def test_ulid2_uuid(benchmark):
     ulid2 = pytest.importorskip("ulid2")
-    assert isinstance(benchmark(lambda: ulid2.generate_ulid_as_uuid()), UUID)
+    assert isinstance(benchmark(ulid2.generate_ulid_as_uuid), UUID)
 
 
 @pytest.mark.benchmark(group="ulid_as_uuid")

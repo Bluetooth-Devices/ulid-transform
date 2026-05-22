@@ -23,7 +23,7 @@ def test_mixed_case_decodes(impl, ulid):
 
 
 @pytest.mark.parametrize(
-    "alias,canon",
+    ("alias", "canon"),
     [("I", "1"), ("i", "1"), ("L", "1"), ("l", "1"), ("O", "0"), ("o", "0")],
 )
 def test_crockford_aliases(impl, alias, canon):

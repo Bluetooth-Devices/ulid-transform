@@ -1,11 +1,11 @@
 import pytest
 
-import tests.conftest  # noqa
+import tests.conftest  # noqa: F401
 
 
 @pytest.mark.benchmark(group="ulid_strings")
 def test_ut_ulid_now(benchmark, impl):
-    assert isinstance(benchmark(lambda: impl.ulid_now()), str)
+    assert isinstance(benchmark(impl.ulid_now), str)
 
 
 @pytest.mark.benchmark(group="ulid_strings")
@@ -16,7 +16,7 @@ def test_ut_ulid_at_time(benchmark, impl):
 @pytest.mark.benchmark(group="ulid_strings")
 def test_ulid2_ulid_now(benchmark):
     ulid2 = pytest.importorskip("ulid2")
-    assert isinstance(benchmark(lambda: ulid2.generate_ulid_as_base32()), str)
+    assert isinstance(benchmark(ulid2.generate_ulid_as_base32), str)
 
 
 @pytest.mark.benchmark(group="ulid_strings")

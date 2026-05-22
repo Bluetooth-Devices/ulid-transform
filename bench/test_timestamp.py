@@ -1,6 +1,6 @@
 import pytest
 
-import tests.conftest  # noqa
+import tests.conftest  # noqa: F401
 
 example = "01J3YPYJJW00GW0X476W5TVBFE"
 example_timestamp = 1722238847580
