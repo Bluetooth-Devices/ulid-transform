@@ -3,8 +3,8 @@
 from distutils.command.build_ext import build_ext
 import logging
 import os
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 try:
