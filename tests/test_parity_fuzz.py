@@ -9,14 +9,15 @@ regressions in the base32 codec or the type-checking front doors.
 
 Scope is deliberately the *deterministic* surface: ``ulid_to_bytes``,
 ``bytes_to_ulid``, ``ulid_to_timestamp``, and their ``*_or_none`` counterparts.
-Two regions are intentionally out of scope because they hold C-vs-Py
-divergences that are still tracked by open PRs and already enumerated, with
-xfail markers, in the matrix:
+The ``ulid_at_time*`` family stays out of scope: its random 80-bit tail makes
+full-output comparison non-deterministic, and its numeric-domain corners
+(NaN/inf/overflow/str-reject — #218/#219) are pinned in the matrix instead.
 
-* the ``ulid_at_time*`` numeric domain (NaN/inf/overflow/str-reject — #218/#219);
-* buffer-protocol inputs (``bytearray``/``memoryview``/``list``) to the
-  encode/decode front doors, where Python's buffer tolerance diverges from the
-  C extension's strict type check (#210).
+Buffer-protocol inputs (``bytearray``/``memoryview``/``list``) to the
+encode/decode front doors were once excluded under #210, when Python's buffer
+tolerance diverged from the C extension's strict type check. That divergence is
+resolved (#210 closed) — both impls now reject them identically at the strict
+``str``/``bytes`` gate — so they are fuzzed here in ``test_wrong_type_parity``.
 
 Seeds are fixed so CI is fully reproducible: a failure always replays from the
 ``seed`` printed in the assertion message.
@@ -192,19 +193,40 @@ def test_round_trip_random_bytes(seed):
 
 
 # --------------------------------------------------------------------------- #
-# Type front door: random non-str/bytes scalars -> same exception type / None.
-# Buffer-protocol types (bytearray/memoryview/list) are excluded here — their
-# C-vs-Py divergence is a tracked #210 corner enumerated in the matrix.
+# Type front door: random non-str/bytes inputs -> same exception type / None.
+# Includes buffer-protocol types (bytearray/memoryview/list): #210 is closed and
+# both impls now reject them identically at the strict str/bytes type gate.
 # --------------------------------------------------------------------------- #
+
+
+def _random_buffer_value(rng: random.Random) -> object:
+    """A buffer-protocol value of assorted length and random content.
+
+    ``bytearray``/``memoryview``/``list`` all expose a buffer but are neither
+    ``str`` nor ``bytes``; both impls must reject them at the type gate
+    regardless of length or content.
+    """
+    length = rng.choice([0, 1, 15, 16, 17, 26, 32])
+    raw = bytes(rng.getrandbits(8) for _ in range(length))
+    kind = rng.choice(("bytearray", "memoryview", "list"))
+    if kind == "bytearray":
+        return bytearray(raw)
+    if kind == "memoryview":
+        return memoryview(raw)
+    return list(raw)
 
 
 @pytest.mark.parametrize("seed", _SEEDS)
 def test_wrong_type_parity(seed):
-    """Non-str/bytes scalars must hit the same type-check verdict in both impls."""
+    """Non-str/bytes inputs must hit the same type-check verdict in both impls.
+
+    Covers plain scalars and buffer-protocol types (``bytearray``/
+    ``memoryview``/``list``) of assorted lengths and contents — see #210.
+    """
     rng = random.Random(seed + 6)
-    candidates = [None, 123, 12.5, {"x": 1}, object(), True, frozenset()]
+    scalars = [None, 123, 12.5, {"x": 1}, object(), True, frozenset()]
     for _ in range(_ITERATIONS):
-        value = rng.choice(candidates)
+        value = _random_buffer_value(rng) if rng.random() < 0.5 else rng.choice(scalars)
         for fn in (
             "ulid_to_bytes",
             "bytes_to_ulid",
