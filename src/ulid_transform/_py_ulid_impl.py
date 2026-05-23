@@ -290,9 +290,19 @@ def ulid_at_time_bytes(timestamp: float) -> bytes:
     if not isinstance(timestamp, (int, float)):
         msg = f"must be real number, not {type(timestamp).__name__}"  # type: ignore[unreachable]
         raise TypeError(msg)
-    return int(timestamp * 1000).to_bytes(6, byteorder="big") + int(
-        getrandbits(80)
-    ).to_bytes(10, byteorder="big")
+    ms = int(timestamp * 1000)
+    if ms == 0 and timestamp < 0:
+        # The C extension checks the sign of the millisecond value before the
+        # int cast, so it rejects any negative timestamp. Python's int()
+        # truncates toward zero, so timestamps in (-0.001, 0) seconds silently
+        # produced a ts=0 ULID instead of raising. Match the C extension's
+        # OverflowError. (NaN/inf/true-negative cases already raise from the
+        # int() or to_bytes() calls; -0.0 is not < 0 and stays valid.)
+        msg = "can't convert negative int to unsigned"
+        raise OverflowError(msg)
+    return ms.to_bytes(6, byteorder="big") + int(getrandbits(80)).to_bytes(
+        10, byteorder="big"
+    )
 
 
 def ulid_now_bytes() -> bytes:
