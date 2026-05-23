@@ -278,3 +278,24 @@ def test_bytes_to_ulid_or_none(impl):
 def test_bytes_to_ulid_or_none_invalid_type(impl, value):
     """Non-bytes inputs return None instead of raising (parity with C impl)."""
     assert impl.bytes_to_ulid_or_none(value) is None
+
+
+@pytest.mark.parametrize(
+    "func_name",
+    ["ulid_to_bytes", "ulid_to_timestamp"],
+)
+@pytest.mark.parametrize(
+    "value",
+    ["", "short", "01GTCKZT7K26YEVVW6AMQ3J0VT ", "01GTCKZT7K26YEVVW6AMQ3J0VT0000"],
+)
+def test_string_decode_error_message_reprs_value(impl, func_name, value):
+    """The wrong-length ValueError message repr-quotes the offending value.
+
+    Both impls must embed repr(value) (the C extension uses PyErr_Format's %R),
+    so a trailing space or empty string is unambiguous in the message and the
+    two implementations stay byte-for-byte aligned.
+    """
+    func = getattr(impl, func_name)
+    with pytest.raises(ValueError, match="26 character") as exc_info:
+        func(value)
+    assert repr(value) in str(exc_info.value)
