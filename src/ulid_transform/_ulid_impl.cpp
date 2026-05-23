@@ -1,5 +1,6 @@
 #include "Python.h"
 
+#include <cmath>
 #include <string.h>
 
 #ifdef __SIZEOF_INT128__
@@ -90,6 +91,42 @@ py_ulid_now_bytes(PyObject* module, PyObject* Py_UNUSED(ignored))
     return PyBytes_FromStringAndSize((const char*)buf, ULID_BYTES_LEN);
 }
 
+/* Validate a timestamp (in seconds) and convert to milliseconds.
+ * Returns 0 on success, -1 on error (with a Python exception set).
+ * Error types/messages mirror what int(ts * 1000).to_bytes(6, 'big') raises
+ * in the Python implementation, so the two impls have exception-type parity.
+ */
+static inline int
+validate_timestamp_ms(double ts, int64_t* out_ms)
+{
+    if (std::isnan(ts)) {
+        PyErr_SetString(PyExc_ValueError,
+            "cannot convert float NaN to integer");
+        return -1;
+    }
+    if (std::isinf(ts)) {
+        PyErr_SetString(PyExc_OverflowError,
+            "cannot convert float infinity to integer");
+        return -1;
+    }
+    double ts_ms = ts * 1000.0;
+    if (ts_ms < 0.0) {
+        PyErr_SetString(PyExc_OverflowError,
+            "can't convert negative int to unsigned");
+        return -1;
+    }
+    // ULID timestamps are 48-bit unsigned milliseconds.
+    // 2^48 (281474976710656) is the exclusive upper bound and is exactly
+    // representable as a double, so the comparison is precise here.
+    if (ts_ms >= 281474976710656.0) {
+        PyErr_SetString(PyExc_OverflowError,
+            "int too big to convert");
+        return -1;
+    }
+    *out_ms = static_cast<int64_t>(ts_ms);
+    return 0;
+}
+
 /* ulid_at_time_bytes(timestamp) -> bytes */
 static PyObject*
 py_ulid_at_time_bytes(PyObject* module, PyObject* arg)
@@ -97,8 +134,11 @@ py_ulid_at_time_bytes(PyObject* module, PyObject* arg)
     double ts = PyFloat_AsDouble(arg);
     if (ts == -1.0 && PyErr_Occurred())
         return NULL;
+    int64_t ts_ms;
+    if (validate_timestamp_ms(ts, &ts_ms) < 0)
+        return NULL;
     ulid::ULID ulid;
-    ulid::EncodeTimestamp(static_cast<int64_t>(ts * 1000), ulid);
+    ulid::EncodeTimestamp(ts_ms, ulid);
     ulid::EncodeEntropyFast(ulid);
     uint8_t buf[ULID_BYTES_LEN];
     ulid::MarshalBinaryTo(ulid, buf);
@@ -124,8 +164,11 @@ py_ulid_at_time(PyObject* module, PyObject* arg)
     double ts = PyFloat_AsDouble(arg);
     if (ts == -1.0 && PyErr_Occurred())
         return NULL;
+    int64_t ts_ms;
+    if (validate_timestamp_ms(ts, &ts_ms) < 0)
+        return NULL;
     ulid::ULID ulid;
-    ulid::EncodeTimestamp(static_cast<int64_t>(ts * 1000), ulid);
+    ulid::EncodeTimestamp(ts_ms, ulid);
     ulid::EncodeEntropyFast(ulid);
     char buf[ULID_TEXT_LEN];
     ulid::MarshalTo(ulid, buf);

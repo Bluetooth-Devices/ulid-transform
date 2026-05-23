@@ -93,6 +93,48 @@ def test_timestamp_fixed(impl, gen):
     assert impl.ulid_to_timestamp(ulid) == int(now * 1000)
 
 
+@pytest.mark.parametrize("gen", ["ulid_at_time", "ulid_at_time_bytes"])
+def test_ulid_at_time_nan_raises(impl, gen):
+    with pytest.raises(ValueError, match="NaN"):
+        getattr(impl, gen)(float("nan"))
+
+
+@pytest.mark.parametrize("gen", ["ulid_at_time", "ulid_at_time_bytes"])
+@pytest.mark.parametrize("value", [float("inf"), float("-inf")])
+def test_ulid_at_time_infinity_raises(impl, gen, value):
+    with pytest.raises(OverflowError, match="infinity"):
+        getattr(impl, gen)(value)
+
+
+@pytest.mark.parametrize("gen", ["ulid_at_time", "ulid_at_time_bytes"])
+def test_ulid_at_time_negative_raises(impl, gen):
+    with pytest.raises(OverflowError, match="negative"):
+        getattr(impl, gen)(-1.0)
+
+
+@pytest.mark.parametrize("gen", ["ulid_at_time", "ulid_at_time_bytes"])
+def test_ulid_at_time_too_large_raises(impl, gen):
+    # 2^48 ms / 1000 = 281474976710.656 seconds → ts >= that overflows.
+    with pytest.raises(OverflowError, match="int too big"):
+        getattr(impl, gen)(1e18)
+
+
+@pytest.mark.parametrize("gen", ["ulid_at_time", "ulid_at_time_bytes"])
+def test_ulid_at_time_max_valid(impl, gen):
+    # Exclusive upper bound is 2^48 ms; the largest valid second-timestamp
+    # is just under (2^48 - 1) / 1000. Stay safely below to avoid float
+    # rounding edge cases.
+    ts = 281474976710.000
+    ulid = getattr(impl, gen)(ts)
+    assert ulid is not None
+
+
+@pytest.mark.parametrize("gen", ["ulid_at_time", "ulid_at_time_bytes"])
+def test_ulid_at_time_wrong_type_raises(impl, gen):
+    with pytest.raises(TypeError):
+        getattr(impl, gen)("not-a-float")
+
+
 def test_non_uppercase_b32_data(impl):
     assert len(impl.ulid_to_bytes("not_uppercase_b32_data_:::")) == 16
 
