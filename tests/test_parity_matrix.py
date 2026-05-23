@@ -187,6 +187,9 @@ _AT_TIME_INVALID = [
     pytest.param({}, id="dict"),
     pytest.param("not-a-float", id="str"),
     pytest.param(-1.0, id="negative"),
+    # ts * 1000 in (-1, 0): int() truncates toward zero, so the Python impl
+    # must reject the negative sign before the cast to match the C extension.
+    pytest.param(-0.0005, id="negative-truncates-to-zero"),
     pytest.param(1e18, id="huge"),
     pytest.param(float("nan"), id="nan"),
     pytest.param(float("inf"), id="inf"),
