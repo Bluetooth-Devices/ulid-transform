@@ -92,6 +92,10 @@ _ULID_TO_BYTES_CASES = [
     # 26 codepoints but non-ASCII: C measures UTF-8 byte length (> 26) and
     # raises ValueError; Python must too (not UnicodeEncodeError from .encode).
     pytest.param("é" * 26, id="non-ascii-26"),
+    # 13 two-byte codepoints = exactly 26 UTF-8 bytes: the byte-length check
+    # alone passes, so C must also verify ASCII or it decodes garbage instead
+    # of raising ValueError like Python.
+    pytest.param("é" * 13, id="non-ascii-13cp-26bytes"),
     pytest.param(123, id="int"),
     pytest.param(None, id="none"),
     pytest.param([0] * 26, id="list"),
@@ -114,6 +118,10 @@ _ULID_TO_TIMESTAMP_CASES = [
     pytest.param(_VALID_ULID_BYTES, id="valid-bytes"),
     pytest.param(b"\x00" * 16, id="zero-bytes"),
     pytest.param("short", id="short-str"),
+    # 13 two-byte codepoints = 26 UTF-8 bytes: the C string path decodes inline,
+    # so it must reject non-ASCII or return a garbage timestamp instead of the
+    # ValueError Python raises.
+    pytest.param("é" * 13, id="non-ascii-13cp-26bytes"),
     pytest.param(123, id="int"),
     pytest.param(None, id="none"),
     pytest.param(b"short", id="short-bytes"),
@@ -139,6 +147,9 @@ _ULID_TO_BYTES_OR_NONE_CASES = [
     pytest.param("", id="empty"),
     pytest.param("short", id="short"),
     pytest.param("é" * 26, id="non-ascii-26"),
+    # 13 two-byte codepoints = 26 UTF-8 bytes: C must reject non-ASCII (return
+    # None) rather than decode garbage bytes.
+    pytest.param("é" * 13, id="non-ascii-13cp-26bytes"),
     pytest.param(123, id="int"),
     pytest.param(b"x" * 26, id="bytes-26"),
     pytest.param([0] * 26, id="list-26"),
