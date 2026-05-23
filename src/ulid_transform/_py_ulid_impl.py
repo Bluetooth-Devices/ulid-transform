@@ -288,7 +288,7 @@ def ulid_at_time_bytes(timestamp: float) -> bytes:
     uuid.UUID(bytes=ulid_bytes)
     """
     if not isinstance(timestamp, (int, float)):
-        msg = f"must be real number, not {type(timestamp).__name__}"
+        msg = f"must be real number, not {type(timestamp).__name__}"  # type: ignore[unreachable]
         raise TypeError(msg)
     return int(timestamp * 1000).to_bytes(6, byteorder="big") + int(
         getrandbits(80)
