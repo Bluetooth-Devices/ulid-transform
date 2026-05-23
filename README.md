@@ -40,12 +40,20 @@ This library will use the C++ implementation from https://github.com/suyash/ulid
 '01869a2ea5fb0b43aa056293e47c0a35'
 >>> ulid_transform.ulid_now()
 '0001HZX0NW00GW0X476W5TVBFE'
+>>> ulid_transform.ulid_now_bytes()
+b'\x01\x9eS\x9d\x1bhl~\x1e\xf7\x959\xe1\xf2\xbe\xea'
 >>> ulid_transform.ulid_at_time(1234)
 '000000016JC62D620DGYNG2R8H'
+>>> ulid_transform.ulid_at_time_bytes(1234)
+b'\x00\x00\x00\x12\xd4Pq+\x1eG?\x91\xe9+|\xbd'
 >>> ulid_transform.ulid_to_bytes('0001HZX0NW00GW0X476W5TVBFE')
 b'\x00\x00c\xfe\x82\xbc\x00!\xc0t\x877\x0b\xad\xad\xee'
 >>> ulid_transform.bytes_to_ulid(b"\x01\x86\x99?\xe8\xf3\x11\xbc\xed\xef\x86U.9\x03z")
 '01GTCKZT7K26YEVVW6AMQ3J0VT'
+>>> ulid_transform.ulid_to_timestamp('0001HZX0NW00GW0X476W5TVBFE')  # milliseconds since the epoch
+1677623996
+>>> ulid_transform.ulid_to_timestamp(b'\x00\x00c\xfe\x82\xbc\x00!\xc0t\x877\x0b\xad\xad\xee')  # also accepts bytes
+1677623996
 >>> ulid_transform.ulid_to_bytes_or_none('0001HZX0NW00GW0X476W5TVBFE')
 b'\x00\x00c\xfe\x82\xbc\x00!\xc0t\x877\x0b\xad\xad\xee'
 >>> ulid_transform.ulid_to_bytes_or_none(None)
