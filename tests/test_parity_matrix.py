@@ -89,6 +89,9 @@ _ULID_TO_BYTES_CASES = [
     pytest.param("", id="empty-str"),
     pytest.param("short", id="short-str"),
     pytest.param("X" * 27, id="too-long-str"),
+    # 26 codepoints but non-ASCII: C measures UTF-8 byte length (> 26) and
+    # raises ValueError; Python must too (not UnicodeEncodeError from .encode).
+    pytest.param("é" * 26, id="non-ascii-26"),
     pytest.param(123, id="int"),
     pytest.param(None, id="none"),
     pytest.param([0] * 26, id="list"),

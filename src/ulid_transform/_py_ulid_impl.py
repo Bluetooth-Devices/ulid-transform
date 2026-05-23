@@ -368,7 +368,14 @@ def ulid_to_bytes(value: str) -> bytes:
     if not isinstance(value, str):
         msg = f"ULID must be a string, not {type(value).__name__}"  # type: ignore[unreachable]
         raise TypeError(msg)
-    if len(value) != 26:
+    if len(value) != 26 or not value.isascii():
+        # The C extension measures length in UTF-8 bytes via
+        # PyUnicode_AsUTF8AndSize, so any non-ASCII codepoint pushes the byte
+        # length past 26 and is rejected with ValueError there. Match that: a
+        # non-ASCII string is never a valid 26-character ULID, and folding the
+        # check here keeps the exception type aligned (C raises ValueError; the
+        # bare value.encode("ascii") below would otherwise raise
+        # UnicodeEncodeError).
         msg = f"ULID must be a 26 character string: {value}"
         raise ValueError(msg)
     encoded = value.encode("ascii")

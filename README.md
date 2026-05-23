@@ -44,7 +44,7 @@ This library will use the C++ implementation from https://github.com/suyash/ulid
 '000000016JC62D620DGYNG2R8H'
 >>> ulid_transform.ulid_to_bytes('0001HZX0NW00GW0X476W5TVBFE')
 b'\x00\x00c\xfe\x82\xbc\x00!\xc0t\x877\x0b\xad\xad\xee'
->> ulid_transform.bytes_to_ulid(b"\x01\x86\x99?\xe8\xf3\x11\xbc\xed\xef\x86U.9\x03z")
+>>> ulid_transform.bytes_to_ulid(b"\x01\x86\x99?\xe8\xf3\x11\xbc\xed\xef\x86U.9\x03z")
 '01GTCKZT7K26YEVVW6AMQ3J0VT'
 >>> ulid_transform.ulid_to_bytes_or_none('0001HZX0NW00GW0X476W5TVBFE')
 b'\x00\x00c\xfe\x82\xbc\x00!\xc0t\x877\x0b\xad\xad\xee'
