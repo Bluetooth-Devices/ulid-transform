@@ -8,9 +8,9 @@ import sys
 from typing import Any
 
 try:
-    from setuptools import Extension
+    from setuptools import Extension, setup
 except ImportError:
-    from distutils.core import Extension
+    from distutils.core import Extension, setup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -94,8 +94,6 @@ def _run_main() -> None:
     ``from build_ext import *``, which fails under
     ``PYTHONSAFEPATH=1`` (see issue #137).
     """
-    from setuptools import setup
-
     _clean_stale_artifacts()
     setup_kwargs: dict[str, Any] = {
         "name": "ulid-transform",
