@@ -64,6 +64,23 @@ def build(setup_kwargs: Any) -> None:
             raise
 
 
+def _clean_stale_artifacts() -> None:
+    """Remove previously-built extension artifacts before packaging.
+
+    The wheel ``include`` globs in ``pyproject.toml`` are unconditional, so a
+    stale ``.so``/``.pyd`` left in ``src/ulid_transform/`` by an earlier build
+    would otherwise be packaged even when the extension is skipped
+    (``SKIP_EXTENSION``) or its build failed and was swallowed, yielding an
+    incompatible binary wheel instead of the requested pure-Python fallback.
+    Clearing them first means the include globs only ever match a freshly
+    built artifact from this run.
+    """
+    pkg_dir = Path("src") / "ulid_transform"
+    for pattern in ("*.so", "*.pyd"):
+        for artifact in pkg_dir.glob(pattern):
+            artifact.unlink()
+
+
 def _run_main() -> None:
     """Build the C extension when invoked directly.
 
@@ -79,6 +96,7 @@ def _run_main() -> None:
     """
     from setuptools import setup
 
+    _clean_stale_artifacts()
     setup_kwargs: dict[str, Any] = {
         "name": "ulid-transform",
         "packages": ["ulid_transform"],

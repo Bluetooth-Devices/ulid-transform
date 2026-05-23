@@ -124,6 +124,29 @@ jobs:
         run: poetry run pytest -v -Wdefault --cov=ulid_transform --cov-report=term-missing:skip-covered --cov-report=xml tests
         shell: alpine.sh --root  {0}
 
+  sdist_safe_path:
+    name: "sdist install under PYTHONSAFEPATH"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Build sdist
+        run: |
+          pip install poetry
+          poetry build -f sdist
+        shell: bash
+      - name: Install sdist under PYTHONSAFEPATH (regression guard for #137)
+        run: |
+          PYTHONSAFEPATH=1 REQUIRE_EXTENSION=1 pip install -v dist/*.tar.gz
+        shell: bash
+      - name: Verify the C extension imports
+        run: |
+          PYTHONSAFEPATH=1 python -c "import ulid_transform._ulid_impl; from ulid_transform import ulid_now; print(ulid_now())"
+        shell: bash
+
   benchmark:
     strategy:
       fail-fast: false
@@ -195,6 +218,7 @@ jobs:
       - lint
       - test32bit
       - commitlint
+      - sdist_safe_path
 
     runs-on: ubuntu-latest
     environment: release
