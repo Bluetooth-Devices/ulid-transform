@@ -4,12 +4,13 @@ from distutils.command.build_ext import build_ext
 import logging
 import os
 from pathlib import Path
+import sys
 from typing import Any
 
 try:
-    from setuptools import Extension
+    from setuptools import Extension, setup
 except ImportError:
-    from distutils.core import Extension
+    from distutils.core import Extension, setup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,3 +62,51 @@ def build(setup_kwargs: Any) -> None:
         _LOGGER.exception("Failed to configure C extension")
         if getenv_bool("REQUIRE_CYTHON") or getenv_bool("REQUIRE_EXTENSION"):
             raise
+
+
+def _clean_stale_artifacts() -> None:
+    """Remove previously-built extension artifacts before packaging.
+
+    The wheel ``include`` globs in ``pyproject.toml`` are unconditional, so a
+    stale ``.so``/``.pyd`` left in ``src/ulid_transform/`` by an earlier build
+    would otherwise be packaged even when the extension is skipped
+    (``SKIP_EXTENSION``) or its build failed and was swallowed, yielding an
+    incompatible binary wheel instead of the requested pure-Python fallback.
+    Clearing them first means the include globs only ever match a freshly
+    built artifact from this run.
+    """
+    pkg_dir = Path("src") / "ulid_transform"
+    for pattern in ("*.so", "*.pyd"):
+        for artifact in pkg_dir.glob(pattern):
+            artifact.unlink()
+
+
+def _run_main() -> None:
+    """Build the C extension when invoked directly.
+
+    poetry-core calls ``python build_ext.py`` (no args) during the wheel
+    build when ``generate-setup-file = false`` is set in
+    ``pyproject.toml``.  We synthesise a ``setuptools.setup()`` call with
+    an in-place ``build_ext`` so the compiled extension lands next to its
+    sources in ``src/ulid_transform/`` where poetry-core's
+    ``find_files_to_add`` picks it up.  ``generate-setup-file = false``
+    is set so the sdist does not ship a generated ``setup.py`` that does
+    ``from build_ext import *``, which fails under
+    ``PYTHONSAFEPATH=1`` (see issue #137).
+    """
+    _clean_stale_artifacts()
+    setup_kwargs: dict[str, Any] = {
+        "name": "ulid-transform",
+        "packages": ["ulid_transform"],
+        "package_dir": {"": "src"},
+    }
+    build(setup_kwargs)
+    if "ext_modules" not in setup_kwargs:
+        return
+    if len(sys.argv) == 1:
+        sys.argv.extend(["build_ext", "--inplace"])
+    setup(**setup_kwargs)
+
+
+if __name__ == "__main__":
+    _run_main()
