@@ -287,6 +287,13 @@ def ulid_at_time_bytes(timestamp: float) -> bytes:
 
     uuid.UUID(bytes=ulid_bytes)
     """
+    if isinstance(timestamp, (str, bytes, bytearray, memoryview)):
+        # Match the C extension's PyFloat_AsDouble behavior, which rejects
+        # these types outright. Without this guard, str/bytes inputs flow into
+        # ``timestamp * 1000`` and surface as OverflowError/ValueError instead
+        # of the TypeError the C path raises.
+        msg = f"must be real number, not {type(timestamp).__name__}"  # type: ignore[unreachable]
+        raise TypeError(msg)
     return int(timestamp * 1000).to_bytes(6, byteorder="big") + int(
         getrandbits(80)
     ).to_bytes(10, byteorder="big")

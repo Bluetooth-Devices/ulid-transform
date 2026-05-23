@@ -40,16 +40,13 @@ _VALID_ULID_STR_LOWER = "01gtckzt7k26yevvw6amq3j0vt"
 # Markers for tracked divergences. ``strict=False`` so an unexpected pass
 # becomes a visible XPASS (not a failure) — that's the signal to remove the
 # marker once the upstream PR lands.
-_xfail_issue_210_strict_input = pytest.mark.xfail(
-    reason="issue #210: Py accepts bytearray/memoryview/bytes where C requires strict type",
-    strict=False,
-)
+#
+# ulid_at_time numeric overflow/NaN/inf semantics are still divergent: the Py
+# path raises while the C path silently wraps via ``static_cast<int64_t>``.
+# That's tracked by PR #218 (C-side validation); keep these xfailed until it
+# lands.
 _xfail_issue_210_overflow = pytest.mark.xfail(
-    reason="issue #210: ulid_at_time overflow semantics undefined; Py raises, C wraps",
-    strict=False,
-)
-_xfail_issue_210_exc_type = pytest.mark.xfail(
-    reason="issue #210: exception-type mismatch (AttributeError vs TypeError, etc.)",
+    reason="issue #210 / PR #218: ulid_at_time overflow semantics undefined; Py raises, C wraps",
     strict=False,
 )
 
@@ -85,13 +82,9 @@ _BYTES_TO_ULID_CASES = [
     pytest.param(123, id="int"),
     pytest.param(None, id="none"),
     pytest.param("a" * 16, id="str-16"),
-    pytest.param([0] * 16, marks=_xfail_issue_210_strict_input, id="list"),
-    pytest.param(bytearray(16), marks=_xfail_issue_210_strict_input, id="bytearray-16"),
-    pytest.param(
-        memoryview(b"\x00" * 16),
-        marks=_xfail_issue_210_strict_input,
-        id="memoryview-16",
-    ),
+    pytest.param([0] * 16, id="list"),
+    pytest.param(bytearray(16), id="bytearray-16"),
+    pytest.param(memoryview(b"\x00" * 16), id="memoryview-16"),
 ]
 
 
@@ -112,15 +105,9 @@ _ULID_TO_BYTES_CASES = [
     pytest.param("X" * 27, id="too-long-str"),
     pytest.param(123, id="int"),
     pytest.param(None, id="none"),
-    pytest.param([0] * 26, marks=_xfail_issue_210_exc_type, id="list"),
-    pytest.param(
-        _VALID_ULID_BYTES, marks=_xfail_issue_210_exc_type, id="ulid-as-bytes"
-    ),
-    pytest.param(
-        bytearray(_VALID_ULID_STR.encode()),
-        marks=_xfail_issue_210_exc_type,
-        id="ulid-as-bytearray",
-    ),
+    pytest.param([0] * 26, id="list"),
+    pytest.param(_VALID_ULID_BYTES, id="ulid-as-bytes"),
+    pytest.param(bytearray(_VALID_ULID_STR.encode()), id="ulid-as-bytearray"),
 ]
 
 
@@ -209,7 +196,14 @@ _AT_TIME_INVALID = [
     pytest.param(None, id="none"),
     pytest.param([0], id="list"),
     pytest.param({}, id="dict"),
-    pytest.param("not-a-float", marks=_xfail_issue_210_exc_type, id="str"),
+    # str / bytes / bytearray / memoryview: the C path's PyFloat_AsDouble
+    # rejects these with TypeError; the Py path now mirrors that with an
+    # explicit isinstance guard (was OverflowError/ValueError before the fix).
+    pytest.param("not-a-float", id="str"),
+    pytest.param("123", id="str-digits"),
+    pytest.param(b"123", id="bytes"),
+    pytest.param(bytearray(b"123"), id="bytearray"),
+    pytest.param(memoryview(b"123"), id="memoryview"),
     pytest.param(-1.0, marks=_xfail_issue_210_overflow, id="negative"),
     pytest.param(1e18, marks=_xfail_issue_210_overflow, id="huge"),
     # NaN / inf: Py raises on float->int conversion, C casts the NaN/inf
