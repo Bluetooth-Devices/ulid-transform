@@ -1,6 +1,6 @@
 [project]
 name = "ulid-transform"
-version = "2.2.5"
+version = "2.2.6"
 license = "MIT"
 description = "Create and transform ULIDs"
 readme = "README.md"
