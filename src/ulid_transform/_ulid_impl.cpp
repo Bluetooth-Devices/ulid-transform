@@ -189,7 +189,11 @@ py_ulid_to_bytes(PyObject* module, PyObject* arg)
     const char* str = PyUnicode_AsUTF8AndSize(arg, &len);
     if (!str)
         return NULL;
-    if (len != ULID_TEXT_LEN) {
+    // len is the UTF-8 byte length. A non-ASCII string can still be exactly
+    // 26 bytes (e.g. 13 two-byte codepoints), so an ASCII check is required to
+    // reject it — otherwise DecodeBase32To reads garbage. Mirrors the Python
+    // impl's `len(value) != 26 or not value.isascii()`.
+    if (len != ULID_TEXT_LEN || !PyUnicode_IS_ASCII(arg)) {
         PyErr_Format(PyExc_ValueError,
             "ULID must be a 26 character string: %R", arg);
         return NULL;
@@ -229,7 +233,9 @@ py_ulid_to_bytes_or_none(PyObject* module, PyObject* arg)
     const char* str = PyUnicode_AsUTF8AndSize(arg, &len);
     if (!str)
         return NULL;
-    if (len != ULID_TEXT_LEN)
+    // See py_ulid_to_bytes: a non-ASCII string can be exactly 26 UTF-8 bytes,
+    // so reject anything non-ASCII to match the Python impl returning None.
+    if (len != ULID_TEXT_LEN || !PyUnicode_IS_ASCII(arg))
         Py_RETURN_NONE;
     uint8_t buf[ULID_BYTES_LEN];
     ulid::DecodeBase32To(str, buf);
@@ -271,7 +277,9 @@ py_ulid_to_timestamp(PyObject* module, PyObject* arg)
     const char* str = PyUnicode_AsUTF8AndSize(arg, &len);
     if (!str)
         return NULL;
-    if (len != ULID_TEXT_LEN) {
+    // See py_ulid_to_bytes: a non-ASCII string can be exactly 26 UTF-8 bytes,
+    // so reject anything non-ASCII to match the Python impl raising ValueError.
+    if (len != ULID_TEXT_LEN || !PyUnicode_IS_ASCII(arg)) {
         PyErr_Format(PyExc_ValueError,
             "ULID must be a 26 character string: %R", arg);
         return NULL;
