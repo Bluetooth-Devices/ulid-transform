@@ -292,3 +292,36 @@ def test_bytes_to_ulid_or_none(impl):
 def test_bytes_to_ulid_or_none_invalid_type(impl, value):
     """Non-bytes inputs return None instead of raising (parity with C impl)."""
     assert impl.bytes_to_ulid_or_none(value) is None
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["", "short", "01GTCKZT7K26YEVVW6AMQ3J0VT ", "01GTCKZT7K26YEVVW6AMQ3J0VT0000"],
+)
+def test_ulid_to_bytes_error_message_reprs_value(impl: ModuleType, value: str) -> None:
+    """The wrong-length ValueError message repr-quotes the offending value.
+
+    Both impls must embed repr(value) (the C extension uses PyErr_Format's %R),
+    so a trailing space or empty string is unambiguous in the message and the
+    two implementations stay byte-for-byte aligned.
+    """
+    with pytest.raises(ValueError, match="26 character") as exc_info:
+        impl.ulid_to_bytes(value)
+    assert repr(value) in str(exc_info.value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["", "short", "01GTCKZT7K26YEVVW6AMQ3J0VT ", "01GTCKZT7K26YEVVW6AMQ3J0VT0000"],
+)
+def test_ulid_to_timestamp_error_message_reprs_value(
+    impl: ModuleType, value: str
+) -> None:
+    """ulid_to_timestamp's string path inherits the repr-quoted ValueError.
+
+    It delegates to ulid_to_bytes, so the wrong-length message must embed
+    repr(value) on both impls just like the ulid_to_bytes path.
+    """
+    with pytest.raises(ValueError, match="26 character") as exc_info:
+        impl.ulid_to_timestamp(value)
+    assert repr(value) in str(exc_info.value)

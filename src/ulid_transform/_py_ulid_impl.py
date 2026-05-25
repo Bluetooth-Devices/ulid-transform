@@ -386,7 +386,9 @@ def ulid_to_bytes(value: str) -> bytes:
         # check here keeps the exception type aligned (C raises ValueError; the
         # bare value.encode("ascii") below would otherwise raise
         # UnicodeEncodeError).
-        msg = f"ULID must be a 26 character string: {value}"
+        # Use repr (!r) to match the C extension's PyErr_Format("%R", arg) and
+        # the bytes-decode messages, which already repr-quote the value.
+        msg = f"ULID must be a 26 character string: {value!r}"
         raise ValueError(msg)
     encoded = value.encode("ascii")
     decoding = _DECODE
