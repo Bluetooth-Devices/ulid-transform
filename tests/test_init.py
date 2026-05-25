@@ -107,9 +107,23 @@ def test_ulid_at_time_infinity_raises(impl, gen, value):
 
 
 @pytest.mark.parametrize("gen", ["ulid_at_time", "ulid_at_time_bytes"])
-def test_ulid_at_time_negative_raises(impl, gen):
+@pytest.mark.parametrize(
+    "value",
+    [
+        -1.0,
+        # Timestamps in (-0.001, 0) seconds: ts * 1000 lands in (-1, 0), which
+        # int() truncates toward zero. The C extension checks the sign of the
+        # millisecond value *before* the cast, so it rejects these as negative;
+        # the Python impl must do the same instead of silently producing ts=0.
+        -0.0009,
+        -0.0005,
+        -0.0001,
+        -1e-9,
+    ],
+)
+def test_ulid_at_time_negative_raises(impl, gen, value):
     with pytest.raises(OverflowError, match="negative"):
-        getattr(impl, gen)(-1.0)
+        getattr(impl, gen)(value)
 
 
 @pytest.mark.parametrize("gen", ["ulid_at_time", "ulid_at_time_bytes"])
