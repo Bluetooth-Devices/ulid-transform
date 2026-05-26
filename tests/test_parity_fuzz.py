@@ -3,9 +3,17 @@
 Complements the enumerated grid in ``test_parity_matrix.py``: instead of a
 fixed table of hand-picked cases, this seeds a PRNG and feeds thousands of
 random valid and malformed inputs to both implementations, asserting identical
-observable behavior — same return value, or same exception type. It locks in
-the parity achieved across the #206-#212 / #219 fixes and guards against future
-regressions in the base32 codec or the type-checking front doors.
+observable behavior — same return value, or same exception *type and message*.
+It locks in the parity achieved across the #206-#212 / #219 / #221 / #226 /
+#227 fixes and guards against future regressions in the base32 codec or the
+type-checking front doors.
+
+Message text is part of the comparison (see ``_run``). Once #227 aligned the
+last divergent message (the Python string decoder's wrong-length ``ValueError``
+now ``repr``-quotes the value like the C ``%R`` does), every malformed input
+the fuzz generates raises a byte-identical message in both impls — so the
+thousands of generated cases double as a regression guard for the message-text
+divergence class that a type-only assertion cannot see.
 
 Scope is deliberately the *deterministic* surface: ``ulid_to_bytes``,
 ``bytes_to_ulid``, ``ulid_to_timestamp``, and their ``*_or_none`` counterparts.
@@ -62,17 +70,23 @@ _SEEDS = [1, 7, 42, 1234, 98765]
 _ITERATIONS = 4000
 
 
-def _run(fn: Callable[..., object], *args: object) -> tuple[str, object]:
-    """Reduce a call to a comparable ``(kind, payload)`` pair.
+def _run(fn: Callable[..., object], *args: object) -> tuple[object, ...]:
+    """Reduce a call to a comparable ``(kind, *payload)`` tuple.
 
-    ``("ok", value)`` on success, ``("exc", ExceptionTypeName)`` on failure.
-    Exception *messages* are intentionally ignored — only the type matters for
-    parity here (the matrix already pins message text where it counts).
+    ``("ok", value)`` on success, ``("exc", ExceptionTypeName, message)`` on
+    failure. The exception *message* is part of the comparison: every entry
+    point fuzzed here now raises byte-identical messages in both impls — the C
+    extension and the Python fallback agree on the wrong-type ``not <type>``
+    suffix, the wrong-length ``repr``-quoted value (#227), and the non-ASCII
+    rejection (#221/#226). Comparing only the exception *type* would silently
+    miss message drift, the divergence class that earlier slipped past both
+    this fuzz and the type-only matrix. ``ulid_at_time*`` stays out of scope
+    (random tail); every other entry point on this surface is message-aligned.
     """
     try:
         return ("ok", fn(*args))
-    except Exception as exc:  # noqa: BLE001 - any divergence in raised type is a finding
-        return ("exc", type(exc).__name__)
+    except Exception as exc:  # noqa: BLE001 - any divergence in type or message is a finding
+        return ("exc", type(exc).__name__, str(exc))
 
 
 def _assert_parity(fn_name: str, value: object, seed: int) -> None:
