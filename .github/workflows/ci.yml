@@ -212,6 +212,35 @@ jobs:
           run: poetry run pytest --no-cov -vvvvv --codspeed tests/benchmarks
           mode: instrumentation
 
+  # Dry run on PRs and non-main pushes. No environment, no publish
+  # permissions, no OIDC, so PR runs carry no release blast radius.
+  release-dry-run:
+    needs:
+      - test
+      - lint
+      - test32bit
+      - commitlint
+      - sdist_safe_path
+    if: github.ref_name != 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+      - name: Create local branch name
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: git switch -C "$BRANCH"
+      - name: Test release
+        uses: python-semantic-release/python-semantic-release@v10.5.3
+        with:
+          no_operation_mode: true
+
+  # Real release, only on main. The release environment and write/OIDC
+  # permissions are scoped to this job so they never apply to PR runs.
   release:
     needs:
       - test
@@ -219,7 +248,7 @@ jobs:
       - test32bit
       - commitlint
       - sdist_safe_path
-
+    if: github.ref_name == 'main'
     runs-on: ubuntu-latest
     environment: release
     concurrency:
@@ -238,23 +267,15 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.ref_name }}
 
-      # PSR errors on detached HEAD; give it a named branch for PR dry runs
-      - name: Create local branch for PSR dry run
-        if: github.event_name == 'pull_request'
-        run: git switch -c "pr-${{ github.event.pull_request.number }}"
-
-      # Do a dry run of PSR
-      - name: Test release
-        uses: python-semantic-release/python-semantic-release@v10.5.3
-        if: github.ref_name != 'main'
-        with:
-          no_operation_mode: true
+      - name: Create local branch name
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: git switch -C "$BRANCH"
 
       # On main branch: actual PSR + upload to PyPI & GitHub
       - name: Release
         uses: python-semantic-release/python-semantic-release@v10.5.3
         id: release
-        if: github.ref_name == 'main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
